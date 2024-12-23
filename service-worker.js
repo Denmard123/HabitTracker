@@ -3,9 +3,9 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
       caches.open('habit-tracker-cache').then((cache) => {
         return cache.addAll([
-          '/',
-          '/index.html',  
-          '/src.js',
+          './',
+          './index.html',  
+          './src.js',
           './manifest.json'      
         ]);
       })
