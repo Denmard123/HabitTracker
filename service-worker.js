@@ -1,52 +1,54 @@
-// Install event untuk menyimpan file yang dibutuhkan di cache
+// Nama cache dengan versi untuk memastikan pembaruan cache
+const CACHE_NAME = 'habit-tracker-cache-v2'; // Perbarui versi setiap kali ada perubahan
+
+// Daftar file yang akan di-cache
+const CACHE_ASSETS = [
+  './',
+  './index.html',
+  './src.js',
+  './manifest.json',
+];
+
+// Event Install: Tambahkan file ke cache
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-      caches.open('habit-tracker-cache').then((cache) => {
-        return cache.addAll([
-          './',
-          './index.html',  
-          './src.js',
-          './manifest.json'      
-        ]);
-      })
-    );
-  });
-  
-  // Aktifkan event untuk membersihkan cache lama yang tidak diperlukan
-  self.addEventListener('activate', (event) => {
-    const cacheWhitelist = ['habit-tracker-cache'];
-    event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (!cacheWhitelist.includes(cacheName)) {
-              return caches.delete(cacheName); // Menghapus cache yang tidak digunakan
-            }
-          })
-        );
-      })
-    );
-  });
-  
-  // Fetch event untuk mengelola request ke jaringan dan cache
-  self.addEventListener('fetch', (event) => {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        // Jika file ada di cache, kembalikan dari cache
-        if (response) {
-          return response;
-        }
-  
-        // Jika file tidak ada di cache, ambil dari jaringan dan cache respons
-        return fetch(event.request).then((networkResponse) => {
-          // Caching respons untuk permintaan jaringan
-          return caches.open('habit-tracker-cache').then((cache) => {
-            // Cache respons baru dari jaringan
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Caching files...');
+      return cache.addAll(CACHE_ASSETS);
+    })
+  );
+});
+
+// Event Activate: Hapus cache lama yang tidak digunakan
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log(`Deleting old cache: ${cacheName}`);
+            return caches.delete(cacheName); // Hapus cache yang lama
+          }
+        })
+      );
+    })
+  );
+});
+
+// Event Fetch: Mengambil file dari jaringan atau cache
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Jika file berhasil diambil dari jaringan, cache respons baru
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
         });
       })
-    );
-  });
-  
+      .catch(() => {
+        // Jika gagal mengambil dari jaringan, gunakan cache
+        return caches.match(event.request);
+      })
+  );
+});
