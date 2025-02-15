@@ -27,35 +27,21 @@ app.get('/service-worker.js', (req, res) => {
 
 // Endpoint untuk menyimpan data kebiasaan
 app.post('/save-habits', (req, res) => {
-  const { completedData, failedData } = req.body;
-
-  console.log("Data yang diterima di server:", req.body);
-
-  if (!completedData || !failedData || !Array.isArray(completedData) || !Array.isArray(failedData)) {
-    return res.status(400).json({ success: false, message: 'Data tidak lengkap atau format tidak valid!' });
-  }
-
-  // Hanya menyimpan data terbaru
-  rekapitulasiData = [];
-
-  completedData.forEach(item => {
-    rekapitulasiData.push({
-      habitName: item.habitName,
-      status: 'Selesai',
-      time: item.time,
-    });
+  process.nextTick(() => {
+    const { completedData, failedData } = req.body;
+    console.log("Data yang diterima di server:", req.body);
+  
+    if (!completedData || !failedData || !Array.isArray(completedData) || !Array.isArray(failedData)) {
+      return res.status(400).json({ success: false, message: 'Data tidak lengkap atau format tidak valid!' });
+    }
+  
+    rekapitulasiData = [...completedData.map(item => ({ ...item, status: 'Selesai' })), 
+                        ...failedData.map(item => ({ ...item, status: 'Gagal' }))];
+  
+    res.status(200).json({ success: true, message: "Data terbaru telah disimpan!" });
   });
-
-  failedData.forEach(item => {
-    rekapitulasiData.push({
-      habitName: item.habitName,
-      status: 'Gagal',
-      time: item.time,
-    });
-  });
-
-  res.status(200).json({ success: true, message: "Data terbaru telah disimpan!" });
 });
+
 
 // Endpoint untuk mendapatkan data rekapitulasi
 app.get('/get-rekapitulasi', (req, res) => {

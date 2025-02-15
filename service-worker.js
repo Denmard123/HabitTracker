@@ -37,26 +37,18 @@ self.addEventListener('activate', (event) => {
 
 // Event Fetch: Mengambil file dari jaringan atau cache
 self.addEventListener('fetch', (event) => {
-  // Jika request ke API `/get-rekapitulasi`, gunakan strategi network-first
-  if (event.request.url.includes('/get-rekapitulasi')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        })
-    );
-  } else {
-    // Untuk file statis, gunakan cache-first
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        return cachedResponse || fetch(event.request);
-      })
-    );
-  }
+  if (!event.request.url.startsWith('http')) return; // Hindari cache request yang tidak perlu
+  event.respondWith(
+    caches.match(event.request).then((cacheResponse) => {
+      return cacheResponse || fetch(event.request).then((networkResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      });
+    }).catch(() => {
+      return caches.match('./index.html'); // Pastikan halaman tetap bisa diakses
+    })
+  );
 });
+
