@@ -4,6 +4,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
+// Tambahkan log sebelum server dijalankan
+console.log("Trying to start the server...");
 // Data sementara untuk menyimpan rekapitulasi
 let rekapitulasiData = [];
 
