@@ -1,10 +1,9 @@
 {
-    "name": "Habit Tracker",
-    "short_name": "Habit",
-    "description": "Aplikasi pelacak kebiasaan",
-    "start_url": "./index.html",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#4CAF50"
-  }
-  
+  "name": "Habit Tracker",
+  "short_name": "Habit",
+  "description": "Aplikasi pelacak kebiasaan",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50"
+}
