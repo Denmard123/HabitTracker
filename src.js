@@ -534,7 +534,7 @@ finishButton.addEventListener('click', async () => {
   try {
     // Simpan data ke Supabase
     const { data, error } = await supabase
-      .from('rekapitulasi') // Ganti sesuai nama tabel Supabase kamu
+      .from('HT') // Ganti sesuai nama tabel Supabase kamu
       .insert(combinedData);
 
     if (error) {
