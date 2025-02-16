@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co'; // Ganti dengan URL proyekmu
+const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co'; 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -501,69 +501,57 @@ function handleTimeout(habitItem, habitName, time) {
     gagalButton.setAttribute('data-listener-added', 'true');
   }
 
-  // Event listener untuk tombol finish
-  finishButton.addEventListener('click', () => {
-    const completedList = document.getElementById('completed-list');
-    const failedList = document.getElementById('failed-list');
+ // Event listener untuk tombol finish
+finishButton.addEventListener('click', async () => {
+  const completedList = document.getElementById('completed-list');
+  const failedList = document.getElementById('failed-list');
 
-    // Periksa apakah ada item yang sudah selesai atau gagal
-    if (completedList.children.length === 0 && failedList.children.length === 0) {
-      displayAlert('Belum ada data yang diselesaikan atau gagal!', 'error');
-      return; // Tidak kirim data jika tidak ada yang selesai atau gagal
+  // Periksa apakah ada item yang sudah selesai atau gagal
+  if (completedList.children.length === 0 && failedList.children.length === 0) {
+    displayAlert('Belum ada data yang diselesaikan atau gagal!', 'error');
+    return;
+  }
+
+  // Dapatkan waktu saat ini
+  const currentTime = new Date().toISOString();
+
+  // Mengumpulkan data dari daftar completed & failed
+  const completedData = Array.from(completedList.children).map(li => ({
+    habit_name: li.textContent.trim(),
+    time: currentTime,
+    status: 'Selesai',
+  }));
+
+  const failedData = Array.from(failedList.children).map(li => ({
+    habit_name: li.textContent.trim(),
+    time: currentTime,
+    status: 'Gagal',
+  }));
+
+  // Gabungkan dan hilangkan duplikasi
+  const combinedData = [...completedData, ...failedData];
+
+  try {
+    // Simpan data ke Supabase
+    const { data, error } = await supabase
+      .from('rekapitulasi') // Ganti sesuai nama tabel Supabase kamu
+      .insert(combinedData);
+
+    if (error) {
+      throw error;
     }
 
-    // Dapatkan waktu saat ini untuk setiap entri
-    const currentTime = new Date().toISOString();
+    console.log("✅ Data berhasil disimpan ke Supabase:", data);
+    displayAlert('Data berhasil disimpan ke Supabase!', 'success');
+    
+    // Perbarui tampilan rekapitulasi
+    fetchAndRenderRekapitulasi();
+  } catch (error) {
+    console.error("❌ Error menyimpan data ke Supabase:", error);
+    displayAlert('Terjadi kesalahan saat menyimpan data ke Supabase.', 'error');
+  }
+});
 
-    // Mengumpulkan data untuk dikirim ke server
-    const completedData = Array.from(completedList.children).map(li => ({
-      habitName: li.textContent.trim(),
-      time: currentTime, // Menambahkan waktu untuk data selesai
-      status: 'Completed',
-    }));
-
-    const failedData = Array.from(failedList.children).map(li => ({
-      habitName: li.textContent.trim(),
-      time: currentTime, // Menambahkan waktu untuk data gagal
-      status: 'Failed',
-    }));
-
-    // Gabungkan dan filter data untuk memastikan tidak ada duplikasi
-    const combinedData = [...completedData, ...failedData];
-
-    // Menghindari duplikasi berdasarkan habitName dan status
-    const uniqueData = combinedData.filter((value, index, self) => 
-      index === self.findIndex((t) => (
-        t.habitName === value.habitName && t.status === value.status
-      ))
-    );
-
-    const requestData = { completedData, failedData };
-
-    console.log("Data yang dikirim ke server:", requestData); // Debugging
-
-    // Kirim data ke server
-    fetch('/save-habits', {
-      method: 'POST',
-      body: JSON.stringify(requestData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          displayAlert('Data berhasil disimpan ke server!', 'success');
-          fetchAndRenderRekapitulasi(); // Perbarui rekapitulasi setelah menyimpan
-        } else {
-          displayAlert('Terjadi kesalahan saat menyimpan data.', 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        displayAlert('Terjadi kesalahan server.', 'error');
-      });
-  });
 }
 
 // Fungsi untuk reset input
