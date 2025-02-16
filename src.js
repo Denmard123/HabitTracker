@@ -1,3 +1,10 @@
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co'; // Ganti dengan URL proyekmu
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 document.addEventListener('DOMContentLoaded', () => {
   const mulaiButton = document.getElementById('mulai');
 
@@ -243,55 +250,71 @@ function renderRekapitulasi() {
 
 
 // Fungsi fetch rekapitulasi
-function fetchAndRenderRekapitulasi() {
-  console.log("🔍 Mencari elemen #rekapitulasi-table...");
-  const tableBody = document.querySelector("#rekapitulasi-table");
+async function fetchAndRenderRekapitulasi() {
+  console.log("🔍 Mengambil data rekapitulasi dari Supabase...");
+  const tableBody = document.querySelector("#rekapitulasi-table tbody");
 
   if (!tableBody) {
-    console.warn("❌ Data berhasil di kirim ke halaman rekapitulasi. silahkan cek!");
+    console.warn("❌ Elemen tabel tidak ditemukan.");
     return;
   }
 
-  // Menghapus isi tabel sebelum memasukkan data baru
+  // Kosongkan tabel sebelum fetch
   tableBody.innerHTML = '';
 
-  fetch('/get-rekapitulasi')
-    .then(response => response.json())
-    .then(data => {
-      console.log("✅ Data rekapitulasi diterima:", data);
+  try {
+    // Ambil data dari tabel "rekapitulasi" di Supabase
+    let { data, error } = await supabase
+      .from('HT')
+      .select('*')  // Mengambil semua kolom
+      .order('time', { ascending: false }); // Urutkan berdasarkan waktu terbaru
 
-      const allData = data.rekapitulasiData || [];
+    if (error) {
+      throw error;
+    }
 
-      // Jika data sudah ada, lakukan pengecekan dan update elemen
-      if (allData.length === 0) {
-        console.log("❌ Tidak ada data rekapitulasi yang ditemukan.");
-        return;
-      }
+    console.log("✅ Data rekapitulasi diterima:", data);
 
-      // Memisahkan completedData dan failedData jika diperlukan
-      const completedData = allData.filter(item => item.status === 'Selesai');
-      const failedData = allData.filter(item => item.status === 'Gagal');
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="3" class="border px-4 py-2 text-center text-gray-500">
+            ⚠️ Belum ada data rekapitulasi.
+          </td>
+        </tr>
+      `;
+      return;
+    }
 
-      // Gabungkan keduanya agar bisa dimasukkan ke dalam tabel
-      const combinedData = [...completedData, ...failedData];
+    // Render data ke tabel
+    tableBody.innerHTML = data
+      .map(item => {
+        const formattedTime = new Intl.DateTimeFormat('id-ID', {
+          year: 'numeric', month: 'long', day: 'numeric',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).format(new Date(item.time));
 
-      tableBody.innerHTML = combinedData
-        .map(item => {
-          // Format waktu menjadi tanggal yang lebih jelas
-          const formattedTime = new Date(item.time).toLocaleString();
-
-          return `
-            <tr>
-              <td class="border px-4 py-2">${item.habitName}</td>
-              <td class="border px-4 py-2">${item.status}</td>
-              <td class="border px-4 py-2">${formattedTime}</td>
-            </tr>
-          `;
-        })
-        .join('');
-    })
-    .catch(error => console.error("❌ Error fetching rekapitulasi data:", error));
+        return `
+          <tr>
+            <td class="border px-4 py-2">${item.habit_name}</td>
+            <td class="border px-4 py-2">${item.status}</td>
+            <td class="border px-4 py-2">${formattedTime}</td>
+          </tr>
+        `;
+      })
+      .join('');
+  } catch (error) {
+    console.error("❌ Error fetching data dari Supabase:", error);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="3" class="border px-4 py-2 text-center text-red-500">
+          ⚠️ Gagal mengambil data. Silakan coba lagi.
+        </td>
+      </tr>
+    `;
+  }
 }
+
 
   // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
   function initializeChart() {
