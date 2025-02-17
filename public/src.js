@@ -1,20 +1,21 @@
-// import { supabase } from './supabaseClient';
+import { createClient } from '@supabase/supabase-js';
+ // Inisialisasi Supabase Client
+ const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co';
+ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA';
+ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+ async function fetchData() {
+   const { data, error } = await supabase
+     .from('HT')
+     .select('*');
+   if (error) {
+     console.error(error);
+   } else {
+     console.log(data);
+   }
+ }
+ fetchData();
 document.addEventListener('DOMContentLoaded', () => {
   const mulaiButton = document.getElementById('mulai');
-  // Inisialisasi Supabase Client
-  const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  async function fetchData() {
-    const { data, error } = await supabase
-      .from('HT')
-      .select('*');
-    if (error) {
-      console.error(error);
-    } else {
-      console.log(data);
-    }
-  }
   // Menambahkan event listener untuk animasi tombol
   mulaiButton.addEventListener('click', () => {
     // Tambahkan animasi smooth (misalnya, perubahan skala dan opacity) pada tombol
