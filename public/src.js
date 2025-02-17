@@ -487,12 +487,12 @@ function handleTimeout(habitItem, habitName, time) {
     gagalButton.setAttribute('data-listener-added', 'true');
   }
 
+
 // Event listener untuk tombol finish
 finishButton.addEventListener('click', async () => {
   const completedList = document.getElementById('completed-list');
   const failedList = document.getElementById('failed-list');
 
-  // Jika tidak ada data yang diselesaikan atau gagal
   if (completedList.children.length === 0 && failedList.children.length === 0) {
       displayAlert('Belum ada data yang diselesaikan atau gagal!', 'error');
       return;
@@ -500,42 +500,39 @@ finishButton.addEventListener('click', async () => {
 
   const currentTime = new Date().toISOString();
 
-  // Data untuk habits yang selesai dan gagal
   const completedData = Array.from(completedList.children).map(li => ({
-      habitName: li.textContent.split('(')[0].trim(),  // Ambil nama habit
-      time: currentTime,
-      status: true,  // Completed → true
+      nama: li.textContent.split('(')[0].trim(),
+      tanggal: currentTime,
+      status: true,
   }));
 
   const failedData = Array.from(failedList.children).map(li => ({
-      habitName: li.textContent.split('(')[0].trim(),
-      time: currentTime,
-      status: false,  // Failed → false
+      nama: li.textContent.split('(')[0].trim(),
+      tanggal: currentTime,
+      status: false,
   }));
 
   console.log("📤 Data yang dikirim ke Supabase:", { completedData, failedData });
 
   try {
-      // Mengirim data ke Supabase
       const { data, error } = await supabase
-          .from('HT')  // Nama tabel Supabase (sesuaikan dengan nama tabel Anda)
+          .from('HT')
           .insert([...completedData, ...failedData]);
 
-      // Jika ada error saat menyimpan data
       if (error) throw new Error(error.message);
 
       console.log("✅ Data berhasil disimpan:", data);
       displayAlert('Data berhasil disimpan!', 'success');
 
-      // Setelah data berhasil disimpan, hapus data dari halaman
-      completedList.innerHTML = '';  // Menghapus semua elemen di completedList
-      failedList.innerHTML = '';  // Menghapus semua elemen di failedList
+      completedList.innerHTML = '';  
+      failedList.innerHTML = '';    
 
   } catch (error) {
       console.error("❌ Error:", error);
       displayAlert('Terjadi kesalahan saat menyimpan data.', 'error');
   }
 });
+
 
 
 }
