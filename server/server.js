@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Inisialisasi Supabase Client
-const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co'; 
+const SUPABASE_URL = 'https://kxmnvtgnwuhdkrzzpwxi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -20,12 +20,6 @@ app.use(express.static(path.join(__dirname, '../public'), {
     }
   }
 }));
-
-// Pastikan service worker bisa diakses
-app.get('/service-worker.js', (req, res) => {
-  res.setHeader('Content-Type', 'application/javascript');
-  res.sendFile(path.join(__dirname, '../public/service-worker.js'));
-});
 
 // Endpoint untuk mendapatkan data rekapitulasi dari Supabase
 app.get('/get-rekapitulasi', async (req, res) => {
@@ -67,7 +61,6 @@ app.get('/get-rekapitulasi', async (req, res) => {
   }
 });
 
-
 // Endpoint untuk menyimpan data kebiasaan ke Supabase
 app.post('/save-habits', async (req, res) => {
   try {
@@ -107,7 +100,6 @@ app.post('/save-habits', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal menyimpan data.' });
   }
 });
-
 
 // Jalankan server
 app.listen(PORT, () => {
