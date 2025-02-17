@@ -245,7 +245,6 @@ function renderRekapitulasi() {
 }
 
 
-// Fungsi fetch rekapitulasi
 // Fungsi fetch rekapitulasi dari Supabase
 async function fetchAndRenderRekapitulasi() {
   console.log("🔍 Mengambil data rekapitulasi dari Supabase...");

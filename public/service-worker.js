@@ -42,9 +42,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // Hindari caching request dinamis seperti API
-  if (request.url.includes('/get-rekapitulasi')) {
-    console.log('🚀 Melewati cache untuk request:', request.url);
+  // Hindari caching untuk request POST
+  if (request.method === 'POST') {
+    console.log('🚫 Melewatkan cache untuk POST request:', request.url);
     event.respondWith(fetch(request));
     return;
   }
@@ -52,31 +52,24 @@ self.addEventListener('fetch', (event) => {
   // Caching untuk file statis
   event.respondWith(
     caches.match(request).then((cacheResponse) => {
-      // Jika file ditemukan dalam cache, gunakan cache tersebut
       if (cacheResponse) {
         console.log(`🔧 Mengambil dari cache: ${request.url}`);
         return cacheResponse;
       }
 
-      // Jika tidak ada dalam cache, ambil dari jaringan dan simpan ke cache
       return fetch(request).then((networkResponse) => {
-        // Pastikan response bukan untuk file dinamis sebelum disimpan ke cache
         if (networkResponse && networkResponse.status === 200) {
-          // Buat salinan dari networkResponse untuk disalin ke cache
           const networkResponseClone = networkResponse.clone();
-          
           caches.open(CACHE_NAME).then((cache) => {
-            // Simpan salinan ke cache
             cache.put(request, networkResponseClone);
           });
         }
-        // Kembalikan respons asli kepada pengguna
         return networkResponse;
       }).catch(() => {
-        // Jika jaringan gagal, fallback ke halaman offline
-        console.error('⚠️ Fetch gagal, menampilkan halaman offline sebagai cadangan.');
+        console.error('⚠️ Fetch gagal, menampilkan halaman offline.');
         return caches.match('./index.html');
       });
     })
   );
 });
+
