@@ -13,7 +13,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 app.use(express.json());
 
 // Melayani file statis (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, '../'), {
+app.use(express.static(path.join(__dirname, '../public'), {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.js') || filePath.endsWith('.css') || filePath.endsWith('.json')) {
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache 1 tahun
@@ -24,40 +24,79 @@ app.use(express.static(path.join(__dirname, '../'), {
 // Pastikan service worker bisa diakses
 app.get('/service-worker.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
-  res.sendFile(path.join(__dirname, '../service-worker.js'));
+  res.sendFile(path.join(__dirname, '../public/service-worker.js'));
 });
 
 // Endpoint untuk mendapatkan data rekapitulasi dari Supabase
 app.get('/get-rekapitulasi', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('HT').select('*');
+    console.log("🔄 Mengambil data rekapitulasi dari Supabase...");
 
-    if (error) throw error;
+    const { data, error } = await supabase
+      .from('HT') // Pastikan nama tabel sudah benar
+      .select('*');
 
-    res.status(200).json({ success: true, rekapitulasiData: data });
-  } catch (error) {
-    console.error("❌ Gagal mengambil data dari Supabase:", error);
-    res.status(500).json({ success: false, message: 'Gagal mengambil data rekapitulasi.' });
+    if (error) {
+      console.error("❌ Error dari Supabase:", error);
+      return res.status(500).json({ success: false, message: "Gagal mengambil data dari database.", error });
+    }
+
+    if (!data || data.length === 0) {
+      console.warn("⚠️ Tidak ada data rekapitulasi ditemukan.");
+      return res.status(404).json({ success: false, message: "Data rekapitulasi tidak ditemukan." });
+    }
+
+    // Format data jika perlu (misalnya, convert status menjadi boolean)
+    const formattedData = data.map(item => ({
+      nama: item.nama,  // pastikan ini sesuai dengan field yang ada di database
+      status: item.status ? 'Selesai' : 'Gagal',
+      tanggal: item.tanggal
+    }));
+
+    console.log("✅ Data berhasil diambil:", formattedData);
+
+    return res.json({
+      success: true,
+      message: "Data berhasil diambil.",
+      rekapitulasiData: formattedData
+    });
+
+  } catch (err) {
+    console.error("❌ Error di backend:", err);
+    res.status(500).json({ success: false, message: "Terjadi kesalahan server.", error: err.message });
   }
 });
+
 
 // Endpoint untuk menyimpan data kebiasaan ke Supabase
 app.post('/save-habits', async (req, res) => {
   try {
     console.log("📥 Data yang diterima dari frontend:", req.body);
 
-    if (!Array.isArray(req.body.completedData) || req.body.completedData.length === 0) {
-      return res.status(400).json({ success: false, message: 'Data completedData harus berupa array dan tidak boleh kosong' });
+    const { completedData, failedData } = req.body;
+
+    if ((!Array.isArray(completedData) || !Array.isArray(failedData)) ||
+        (completedData.length === 0 && failedData.length === 0)) {
+      return res.status(400).json({ success: false, message: 'Data completedData atau failedData harus ada' });
     }
 
-    // Sesuaikan nama kolom dengan tabel Supabase (HT)
-    const formattedData = req.body.completedData.map(habit => ({
-      nama: habit.habitName, // Ubah dari `habitName` ke `nama`
-      status: habit.status,  // Sesuai dengan `status`
-      tanggal: habit.time.split('T')[0] // Ambil hanya bagian `YYYY-MM-DD`
-    }));
+    // Gabungkan completedData dan failedData
+    const formattedData = [
+      ...completedData.map(habit => ({
+        nama: habit.habitName,
+        status: true,  // Completed → true
+        tanggal: habit.time.split('T')[0]
+      })),
+      ...failedData.map(habit => ({
+        nama: habit.habitName,
+        status: false,  // Failed → false
+        tanggal: habit.time.split('T')[0]
+      }))
+    ];
 
-    // Kirim data ke Supabase
+    console.log("📤 Data yang akan dikirim ke Supabase:", formattedData);
+
+    // Kirim ke Supabase
     const { data, error } = await supabase.from('HT').insert(formattedData);
 
     if (error) throw error;
