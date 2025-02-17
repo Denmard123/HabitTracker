@@ -717,10 +717,5 @@ function applyDarkMode(isDark) {
   }
 }
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js')
-    .then(reg => console.log('Service Worker terdaftar!', reg))
-    .catch(err => console.error('Service Worker gagal didaftarkan:', err));
-}
 });
 
