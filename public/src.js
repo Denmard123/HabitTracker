@@ -251,28 +251,31 @@ function renderRekapitulasi() {
 // Fungsi fetch rekapitulasi dari Supabase
 async function fetchAndRenderRekapitulasi() {
   console.log("🔍 Mengambil data rekapitulasi dari Supabase...");
+  
+  // Mendapatkan elemen tbody tabel
   const tableBody = document.querySelector("#rekapitulasi-table tbody");
 
   if (!tableBody) {
+    // Jika elemen tbody tidak ditemukan, tampilkan peringatan
     console.warn("❌ Elemen tabel tidak ditemukan.");
     return;
   }
 
   // Kosongkan tabel sebelum fetch
-  tableBody.innerHTML = '';
+  tableBody.innerHTML = '';  // Menghapus konten tabel yang lama
 
   try {
     // Mengambil data dari Supabase
     const { data, error } = await supabase
-      .from('HT')  // Sesuaikan dengan nama tabel Anda di Supabase
-      .select('*');  // Ambil semua kolom
+      .from('HT')  // Sesuaikan dengan nama tabel di Supabase
+      .select('*');  // Mengambil semua kolom dari tabel
 
-    // Jika ada error
+    // Menangani error jika ada
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message);  // Jika ada error, lemparkan exception
     }
 
-    // Periksa apakah data ada
+    // Jika data tidak ditemukan atau kosong
     if (!data || data.length === 0) {
       tableBody.innerHTML = `
         <tr>
@@ -281,26 +284,39 @@ async function fetchAndRenderRekapitulasi() {
           </td>
         </tr>
       `;
-      return;
+      return;  // Keluar dari fungsi jika tidak ada data
     }
 
     console.log("✅ Data rekapitulasi diterima:", data);
 
     // Render data ke tabel dengan nomor urut
-    tableBody.innerHTML = data
-      .map((item, index) => `
+    const rows = data.map((item, index) => {
+      return `
         <tr>
-          <td class="border px-4 py-2">${index + 1}</td> <!-- Menampilkan nomor urut -->
-          <td class="border px-4 py-2">${item.nama}</td> <!-- Menampilkan nama habit -->
-          <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td> <!-- Menampilkan status -->
-          <td class="border px-4 py-2">${item.tanggal}</td> <!-- Menampilkan tanggal -->
+          <td class="border px-4 py-2">${index + 1}</td>  <!-- Menampilkan nomor urut -->
+          <td class="border px-4 py-2">${item.nama || 'N/A'}</td>  <!-- Menampilkan nama habit (cek jika undefined) -->
+          <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td>  <!-- Status (true = Selesai, false = Gagal) -->
+          <td class="border px-4 py-2">${item.tanggal || 'N/A'}</td>  <!-- Menampilkan tanggal (cek jika undefined) -->
         </tr>
-      `)
-      .join('');
+      `;
+    }).join('');
+
+    // Menambahkan baris-baris yang dihasilkan ke dalam tabel
+    tableBody.innerHTML = rows;
+
   } catch (error) {
+    // Menangani error jika terjadi saat fetching data
     console.error("❌ Error fetching data dari Supabase:", error);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4" class="border px-4 py-2 text-center text-red-500">
+          Terjadi kesalahan saat mengambil data.
+        </td>
+      </tr>
+    `;
   }
 }
+
 
 
   // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
@@ -494,45 +510,59 @@ finishButton.addEventListener('click', async () => {
   const completedList = document.getElementById('completed-list');
   const failedList = document.getElementById('failed-list');
 
+  // Pengecekan jika tidak ada data yang diselesaikan atau gagal
   if (completedList.children.length === 0 && failedList.children.length === 0) {
-      displayAlert('Belum ada data yang diselesaikan atau gagal!', 'error');
-      return;
+    displayAlert('❌ Belum ada data yang diselesaikan atau gagal!', 'error');
+    return;
   }
 
   const currentTime = new Date().toISOString();
 
+  // Menyusun data untuk disimpan, dengan status selesai dan gagal
   const completedData = Array.from(completedList.children).map(li => ({
-      nama: li.textContent.split('(')[0].trim(),
-      tanggal: currentTime,
-      status: true,
+    nama: li.textContent.split('(')[0].trim(),
+    tanggal: currentTime,
+    status: true,  // Status selesai
   }));
 
   const failedData = Array.from(failedList.children).map(li => ({
-      nama: li.textContent.split('(')[0].trim(),
-      tanggal: currentTime,
-      status: false,
+    nama: li.textContent.split('(')[0].trim(),
+    tanggal: currentTime,
+    status: false,  // Status gagal
   }));
 
+  // Menampilkan data yang akan dikirim ke Supabase di console untuk debugging
   console.log("📤 Data yang dikirim ke Supabase:", { completedData, failedData });
 
+  // Memastikan ada data yang akan disimpan
+  if (completedData.length === 0 && failedData.length === 0) {
+    displayAlert('❌ Tidak ada data yang dapat disimpan!', 'error');
+    return;
+  }
+
   try {
-      const { data, error } = await supabase
-          .from('HT')
-          .insert([...completedData, ...failedData]);
+    // Menyimpan data ke Supabase
+    const { data, error } = await supabase
+      .from('HT')  // Sesuaikan dengan nama tabel yang ada di Supabase
+      .insert([...completedData, ...failedData]);  // Menyisipkan data selesai dan gagal
 
-      if (error) throw new Error(error.message);
+    // Menangani error dari Supabase
+    if (error) throw new Error(error.message);
 
-      console.log("✅ Data berhasil disimpan:", data);
-      displayAlert('Data berhasil disimpan!', 'success');
+    console.log("✅ Data berhasil disimpan:", data);
+    displayAlert('✅ Data berhasil disimpan!', 'success');  // Menampilkan alert jika data berhasil disimpan
 
-      completedList.innerHTML = '';  
-      failedList.innerHTML = '';    
+    // Mengosongkan daftar setelah berhasil menyimpan
+    completedList.innerHTML = '';  
+    failedList.innerHTML = '';    
 
   } catch (error) {
-      console.error("❌ Error:", error);
-      displayAlert('Terjadi kesalahan saat menyimpan data.', 'error');
+    // Menangani error umum
+    console.error("❌ Error:", error);
+    displayAlert('❌ Terjadi kesalahan saat menyimpan data.', 'error');
   }
 });
+
 
 
 
