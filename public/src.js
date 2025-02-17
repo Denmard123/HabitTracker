@@ -259,30 +259,26 @@ function renderRekapitulasi() {
 async function fetchAndRenderRekapitulasi() {
   console.log("🔍 Mengambil data rekapitulasi dari Supabase...");
   
-  // Mendapatkan elemen tbody tabel
   const tableBody = document.querySelector("#rekapitulasi-table tbody");
 
   if (!tableBody) {
-    // Jika elemen tbody tidak ditemukan, tampilkan peringatan
     console.warn("❌ Elemen tabel tidak ditemukan.");
     return;
   }
 
-  // Kosongkan tabel sebelum fetch
-  tableBody.innerHTML = '';  // Menghapus konten tabel yang lama
+  tableBody.innerHTML = ''; // Kosongkan tabel sebelum fetch
 
   try {
-    // Mengambil data dari Supabase
-    const { data, error } = await supabase
-      .from('HT')  // Sesuaikan dengan nama tabel di Supabase
-      .select('*');  // Mengambil semua kolom dari tabel
-
-    // Menangani error jika ada
-    if (error) {
-      throw new Error(error.message);  // Jika ada error, lemparkan exception
+    if (!supabase) {
+      throw new Error("Supabase belum terinisialisasi.");
     }
 
-    // Jika data tidak ditemukan atau kosong
+    const { data, error } = await supabase
+      .from('HT')
+      .select('*');
+
+    if (error) throw error;
+
     if (!data || data.length === 0) {
       tableBody.innerHTML = `
         <tr>
@@ -291,28 +287,21 @@ async function fetchAndRenderRekapitulasi() {
           </td>
         </tr>
       `;
-      return;  // Keluar dari fungsi jika tidak ada data
+      return;
     }
 
     console.log("✅ Data rekapitulasi diterima:", data);
 
-    // Render data ke tabel dengan nomor urut
-    const rows = data.map((item, index) => {
-      return `
-        <tr>
-          <td class="border px-4 py-2">${index + 1}</td>  <!-- Menampilkan nomor urut -->
-          <td class="border px-4 py-2">${item.nama || 'N/A'}</td>  <!-- Menampilkan nama habit (cek jika undefined) -->
-          <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td>  <!-- Status (true = Selesai, false = Gagal) -->
-          <td class="border px-4 py-2">${item.tanggal || 'N/A'}</td>  <!-- Menampilkan tanggal (cek jika undefined) -->
-        </tr>
-      `;
-    }).join('');
-
-    // Menambahkan baris-baris yang dihasilkan ke dalam tabel
-    tableBody.innerHTML = rows;
+    tableBody.innerHTML = data.map((item, index) => `
+      <tr>
+        <td class="border px-4 py-2">${index + 1}</td>
+        <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
+        <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td>
+        <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
+      </tr>
+    `).join('');
 
   } catch (error) {
-    // Menangani error jika terjadi saat fetching data
     console.error("❌ Error fetching data dari Supabase:", error);
     tableBody.innerHTML = `
       <tr>
@@ -323,6 +312,7 @@ async function fetchAndRenderRekapitulasi() {
     `;
   }
 }
+
 
 
 
@@ -512,12 +502,17 @@ function handleTimeout(habitItem, habitName, time) {
   }
 
 
-// Event listener untuk tombol finish
+// Event listener untuk tombol "Finish"
 finishButton.addEventListener('click', async () => {
   const completedList = document.getElementById('completed-list');
   const failedList = document.getElementById('failed-list');
 
-  // Pengecekan jika tidak ada data yang diselesaikan atau gagal
+  if (!completedList || !failedList) {
+    console.error("❌ Elemen daftar tidak ditemukan.");
+    displayAlert('❌ Terjadi kesalahan pada elemen daftar!', 'error');
+    return;
+  }
+
   if (completedList.children.length === 0 && failedList.children.length === 0) {
     displayAlert('❌ Belum ada data yang diselesaikan atau gagal!', 'error');
     return;
@@ -525,52 +520,47 @@ finishButton.addEventListener('click', async () => {
 
   const currentTime = new Date().toISOString();
 
-  // Menyusun data untuk disimpan, dengan status selesai dan gagal
   const completedData = Array.from(completedList.children).map(li => ({
     nama: li.textContent.split('(')[0].trim(),
     tanggal: currentTime,
-    status: true,  // Status selesai
-  }));
+    status: true,
+  })).filter(item => item.nama); // Pastikan tidak ada nama yang kosong
 
   const failedData = Array.from(failedList.children).map(li => ({
     nama: li.textContent.split('(')[0].trim(),
     tanggal: currentTime,
-    status: false,  // Status gagal
-  }));
+    status: false,
+  })).filter(item => item.nama); // Pastikan tidak ada nama yang kosong
 
-  // Menampilkan data yang akan dikirim ke Supabase di console untuk debugging
-  console.log("📤 Data yang dikirim ke Supabase:", { completedData, failedData });
+  console.log("📤 Data yang akan dikirim ke Supabase:", { completedData, failedData });
 
-  // Memastikan ada data yang akan disimpan
   if (completedData.length === 0 && failedData.length === 0) {
     displayAlert('❌ Tidak ada data yang dapat disimpan!', 'error');
     return;
   }
 
   try {
-    // Menyimpan data ke Supabase
-    const { data, error } = await supabase
-      .from('HT')  // Sesuaikan dengan nama tabel yang ada di Supabase
-      .insert([...completedData, ...failedData]);  // Menyisipkan data selesai dan gagal
+    if (!supabase) {
+      throw new Error("Supabase belum terinisialisasi.");
+    }
 
-    // Menangani error dari Supabase
-    if (error) throw new Error(error.message);
+    const { data, error } = await supabase
+      .from('HT')
+      .insert([...completedData, ...failedData]);
+
+    if (error) throw error;
 
     console.log("✅ Data berhasil disimpan:", data);
-    displayAlert('✅ Data berhasil disimpan!', 'success');  // Menampilkan alert jika data berhasil disimpan
+    displayAlert('✅ Data berhasil disimpan!', 'success');
 
-    // Mengosongkan daftar setelah berhasil menyimpan
     completedList.innerHTML = '';  
     failedList.innerHTML = '';    
 
   } catch (error) {
-    // Menangani error umum
-    console.error("❌ Error:", error);
-    displayAlert('❌ Terjadi kesalahan saat menyimpan data.', 'error');
+    console.error("❌ Error menyimpan data ke Supabase:", error);
+    displayAlert(`❌ Gagal menyimpan data: ${error.message}`, 'error');
   }
 });
-
-
 
 
 }
