@@ -2,13 +2,14 @@
 const SUPABASE_URL = "https://kxmnvtgnwuhdkrzzpwxi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA";
 
-// Periksa apakah window.supabase sudah terdefinisi
-if (window.supabase) {
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  console.log('Supabase client berhasil diinisialisasi');
+// Pastikan Supabase sudah di-load sebelum digunakan
+if (typeof window.supabase !== 'undefined') {
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log('✅ Supabase client berhasil diinisialisasi');
 } else {
-  console.error('Supabase tidak terdefinisi');
+  console.error('❌ Supabase tidak terdefinisi. Pastikan Supabase SDK sudah di-load.');
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const mulaiButton = document.getElementById('mulai');
@@ -273,7 +274,7 @@ async function fetchAndRenderRekapitulasi() {
       throw new Error("Supabase belum terinisialisasi.");
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await window.supabaseClient
       .from('HT')
       .select('*');
 
@@ -544,7 +545,7 @@ finishButton.addEventListener('click', async () => {
       throw new Error("Supabase belum terinisialisasi.");
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await window.supabaseClient
       .from('HT')
       .insert([...completedData, ...failedData]);
 
