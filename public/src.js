@@ -1,3 +1,4 @@
+import { supabase } from '../supabaseClient';
 document.addEventListener('DOMContentLoaded', () => {
   const mulaiButton = document.getElementById('mulai');
 
@@ -245,8 +246,9 @@ function renderRekapitulasi() {
 
 
 // Fungsi fetch rekapitulasi
+// Fungsi fetch rekapitulasi dari Supabase
 async function fetchAndRenderRekapitulasi() {
-  console.log("🔍 Mengambil data rekapitulasi dari server...");
+  console.log("🔍 Mengambil data rekapitulasi dari Supabase...");
   const tableBody = document.querySelector("#rekapitulasi-table tbody");
 
   if (!tableBody) {
@@ -258,26 +260,18 @@ async function fetchAndRenderRekapitulasi() {
   tableBody.innerHTML = '';
 
   try {
-    // Ambil data dari server
-    const response = await fetch('/get-rekapitulasi');
-  
-    // Pastikan server memberikan respon sukses
-    if (!response.ok) {
-      throw new Error('Gagal mendapatkan data dari server');
+    // Mengambil data dari Supabase
+    const { data, error } = await supabase
+      .from('HT')  // Sesuaikan dengan nama tabel Anda di Supabase
+      .select('*');  // Ambil semua kolom
+
+    // Jika ada error
+    if (error) {
+      throw new Error(error.message);
     }
-  
-    const result = await response.json();
-  
-    // Periksa apakah server memberikan hasil yang valid
-    if (!result.success) {
-      throw new Error(result.message);
-    }
-  
-    const data = result.rekapitulasiData;
-    console.log("✅ Data rekapitulasi diterima:", data);
-  
-    // Periksa apakah data ada dan memiliki panjang
-    if (!Array.isArray(data) || data.length === 0) {
+
+    // Periksa apakah data ada
+    if (!data || data.length === 0) {
       tableBody.innerHTML = `
         <tr>
           <td colspan="4" class="border px-4 py-2 text-center text-gray-500">
@@ -287,25 +281,24 @@ async function fetchAndRenderRekapitulasi() {
       `;
       return;
     }
-  
-    // Render data ke tabel dengan nomor urut, bukan ID dari Supabase
+
+    console.log("✅ Data rekapitulasi diterima:", data);
+
+    // Render data ke tabel dengan nomor urut
     tableBody.innerHTML = data
       .map((item, index) => `
         <tr>
           <td class="border px-4 py-2">${index + 1}</td> <!-- Menampilkan nomor urut -->
-          <td class="border px-4 py-2">${item.nama}</td>
-          <td class="border px-4 py-2">${item.status}</td>
-          <td class="border px-4 py-2">${item.tanggal}</td>
+          <td class="border px-4 py-2">${item.habitName}</td> <!-- Ganti dengan kolom yang sesuai -->
+          <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td> <!-- Menampilkan status -->
+          <td class="border px-4 py-2">${item.time}</td> <!-- Menampilkan waktu -->
         </tr>
       `)
       .join('');
   } catch (error) {
-    console.error("❌ Error fetching data dari server:", error);
+    console.error("❌ Error fetching data dari Supabase:", error);
   }
-  
 }
-
-
 
   // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
   function initializeChart() {
@@ -507,7 +500,7 @@ finishButton.addEventListener('click', async () => {
 
   // Data untuk habits yang selesai dan gagal
   const completedData = Array.from(completedList.children).map(li => ({
-      habitName: li.textContent.split('(')[0].trim(), // Ambil nama habit
+      habitName: li.textContent.split('(')[0].trim(),  // Ambil nama habit
       time: currentTime,
       status: true,  // Completed → true
   }));
@@ -518,21 +511,18 @@ finishButton.addEventListener('click', async () => {
       status: false,  // Failed → false
   }));
 
-  console.log("📤 Data yang dikirim ke server:", { completedData, failedData });
+  console.log("📤 Data yang dikirim ke Supabase:", { completedData, failedData });
 
   try {
-      // Mengirim data ke server
-      const response = await fetch('http://localhost:3000/save-habits', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ completedData, failedData }),
-      });
+      // Mengirim data ke Supabase
+      const { data, error } = await supabase
+          .from('HT')  // Nama tabel Supabase (sesuaikan dengan nama tabel Anda)
+          .insert([...completedData, ...failedData]);
 
-      // Jika server tidak memberikan respons yang baik
-      if (!response.ok) throw new Error('Gagal menyimpan data');
+      // Jika ada error saat menyimpan data
+      if (error) throw new Error(error.message);
 
-      const result = await response.json();
-      console.log("✅ Data berhasil disimpan:", result);
+      console.log("✅ Data berhasil disimpan:", data);
       displayAlert('Data berhasil disimpan!', 'success');
 
       // Setelah data berhasil disimpan, hapus data dari halaman
