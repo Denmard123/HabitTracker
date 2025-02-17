@@ -291,9 +291,9 @@ async function fetchAndRenderRekapitulasi() {
       .map((item, index) => `
         <tr>
           <td class="border px-4 py-2">${index + 1}</td> <!-- Menampilkan nomor urut -->
-          <td class="border px-4 py-2">${item.habitName}</td> <!-- Ganti dengan kolom yang sesuai -->
+          <td class="border px-4 py-2">${item.nama}</td> <!-- Menampilkan nama habit -->
           <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td> <!-- Menampilkan status -->
-          <td class="border px-4 py-2">${item.time}</td> <!-- Menampilkan waktu -->
+          <td class="border px-4 py-2">${item.tanggal}</td> <!-- Menampilkan tanggal -->
         </tr>
       `)
       .join('');
@@ -301,6 +301,7 @@ async function fetchAndRenderRekapitulasi() {
     console.error("❌ Error fetching data dari Supabase:", error);
   }
 }
+
 
   // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
   function initializeChart() {
