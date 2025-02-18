@@ -9,6 +9,11 @@ window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 console.log('✅ Supabase client berhasil diinisialisasi:', window.supabaseClient);
 
+// Membuat Supabase Client
+window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+console.log('✅ Supabase client berhasil diinisialisasi:', window.supabaseClient);
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const mulaiButton = document.getElementById('mulai');
