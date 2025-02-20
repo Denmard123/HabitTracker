@@ -305,80 +305,86 @@ function fetchAndRenderRekapitulasi() {
 
 
 
-  // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
-  function initializeChart() {
-    const ctx = document.getElementById("habitChart").getContext("2d");
-  
-    // Gradient untuk background chart
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, "rgba(54, 162, 235, 0.6)");
-    gradient.addColorStop(1, "rgba(54, 162, 235, 0.1)");
-  
-    new Chart(ctx, {
-      type: "line", // Jenis chart
-      data: {
-        labels: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"], // Label untuk X-axis
-        datasets: [
-          {
-            label: "Kebiasaan Harian", // Judul dataset
-            data: [5, 8, 4, 9, 7, 6, 10], // Data yang akan ditampilkan
-            backgroundColor: gradient, // Warna latar belakang dengan efek gradient
-            borderColor: "rgba(54, 162, 235, 1)", // Warna garis grafik
-            borderWidth: 3, // Lebar garis
-            pointBackgroundColor: "rgba(54, 162, 235, 1)", // Warna titik pada grafik
-            pointBorderColor: "#fff", // Warna border titik
-            pointRadius: 5, // Ukuran titik
-            fill: true, // Mengisi area bawah grafik
-            tension: 0.4, // Menambahkan kelengkungan pada garis grafik
-          },
-        ],
-      },
-      options: {
-        responsive: true, // Responsif agar bisa menyesuaikan layar
-        maintainAspectRatio: false, // Memastikan chart menjaga proporsi ukuran
-        plugins: {
-          legend: {
-            position: "top", // Menampilkan legenda di atas chart
-            labels: {
-              font: {
-                size: 14, // Ukuran font legend
-              },
-            },
-          },
-          tooltip: {
-            callbacks: {
-              label: function (tooltipItem) {
-                return tooltipItem.dataset.label + ": " + tooltipItem.raw + " Kebiasaan"; // Format tooltip
-              },
-            },
-            backgroundColor: "rgba(0, 0, 0, 0.7)", // Warna background tooltip
-            titleColor: "#fff", // Warna judul tooltip
-            bodyColor: "#fff", // Warna isi tooltip
-          },
-        },
-        scales: {
-          x: {
-            ticks: {
-              font: {
-                size: 12, // Ukuran font untuk ticks di X-axis
-              },
-            },
-          },
-          y: {
-            ticks: {
-              font: {
-                size: 12, // Ukuran font untuk ticks di Y-axis
-              },
-              beginAtZero: true, // Memulai Y-axis dari angka 0
-              callback: function (value) {
-                return value + " Kebiasaan"; // Menambahkan label untuk angka Y-axis
-              },
-            },
-          },
-        },
-      },
-    });
+ // Fungsi untuk menginisialisasi chart menggunakan data dari LocalStorage
+function initializeChart() {
+  const ctx = document.getElementById("habitChart").getContext("2d");
+
+  // Gradient untuk background chart
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, "rgba(54, 162, 235, 0.6)");
+  gradient.addColorStop(1, "rgba(54, 162, 235, 0.1)");
+
+  // Ambil data dari LocalStorage
+  const habitData = getHabitData();
+
+  // Jika tidak ada data, gunakan default
+  if (!habitData || habitData.length === 0) {
+    console.warn("⚠️ Tidak ada data di LocalStorage. Menggunakan data default.");
   }
+
+  // Hitung jumlah kebiasaan selesai per hari
+  const labels = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+  const dataPerHari = new Array(7).fill(0);
+
+  habitData.forEach((habit) => {
+    if (habit.tanggal && habit.status) {
+      const dayIndex = new Date(habit.tanggal).getDay(); // Ambil index hari (0 = Minggu, 6 = Sabtu)
+      dataPerHari[dayIndex === 0 ? 6 : dayIndex - 1] += 1; // Geser index agar Senin di awal
+    }
+  });
+
+  // Inisialisasi Chart.js
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Kebiasaan Harian",
+          data: dataPerHari,
+          backgroundColor: gradient,
+          borderColor: "rgba(54, 162, 235, 1)",
+          borderWidth: 3,
+          pointBackgroundColor: "rgba(54, 162, 235, 1)",
+          pointBorderColor: "#fff",
+          pointRadius: 5,
+          fill: true,
+          tension: 0.4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: { font: { size: 14 } },
+        },
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => tooltipItem.dataset.label + ": " + tooltipItem.raw + " Kebiasaan",
+          },
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          titleColor: "#fff",
+          bodyColor: "#fff",
+        },
+      },
+      scales: {
+        x: {
+          ticks: { font: { size: 12 } },
+        },
+        y: {
+          ticks: {
+            font: { size: 12 },
+            beginAtZero: true,
+            callback: (value) => value + " Kebiasaan",
+          },
+        },
+      },
+    },
+  });
+}
   
 // Fungsi untuk menginisialisasi tracker kebiasaan
 function initHabitTracker() {
