@@ -402,9 +402,7 @@ function initializeChart() {
 }
   
 // Fungsi untuk menginisialisasi tracker kebiasaan
-function initHabitTracker() {
-  document.getElementById("app").innerHTML = renderHabitList();
-  
+function initHabitTracker() {  
   const habitInput = document.getElementById("habit-input");
   const habitTime = document.getElementById("habit-time");
   const habitList = document.getElementById("habit-list");
