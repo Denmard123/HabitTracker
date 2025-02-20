@@ -441,7 +441,20 @@ function initializeChart() {
     },
   });
 }
-  
+
+  function saveTemporaryData(type, habitName) {
+  const storageKey = "tempHabitData";
+  const existingData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+  existingData.push({
+    nama: habitName,
+    tanggal: new Date().toISOString(),
+    status: type === "completed" ? true : false
+  });
+
+  localStorage.setItem(storageKey, JSON.stringify(existingData));
+}
+
 // Fungsi untuk menginisialisasi tracker kebiasaan
 function initHabitTracker() {
   const habitInput = document.getElementById('habit-input');
@@ -544,96 +557,106 @@ function handleTimeout(habitItem, habitName, time) {
   // Menghindari penambahan event listener yang berulang
   if (!selesaiButton.hasAttribute('data-listener-added')) {
     selesaiButton.addEventListener(
-      'click',
-      () => {
-        const completedList = document.getElementById('completed-list');
-        if (completedList) {
-          const liCompleted = document.createElement('li');
-          liCompleted.className =
-            'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-green-200';
-          liCompleted.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
-          completedList.appendChild(liCompleted);
-          displayAlert(`${habitName} selesai!`, 'success');
-          habitItem.remove();
-        } else {
-          console.error('Elemen completed-list tidak ditemukan.');
-        }
-      },
-      { once: true }
-    );
+  'click',
+  () => {
+    saveTemporaryData("completed", habitName);
+    const completedList = document.getElementById('completed-list');
+    if (completedList) {
+      const liCompleted = document.createElement('li');
+      liCompleted.className = 'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-green-200';
+      liCompleted.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
+      completedList.appendChild(liCompleted);
+      displayAlert(`${habitName} selesai!`, 'success');
+      habitItem.remove();
+    }
+  },
+  { once: true }
+);
     selesaiButton.setAttribute('data-listener-added', 'true');
   }
 
   // Menambahkan event listener untuk tombol gagal jika belum ada
   if (!gagalButton.hasAttribute('data-listener-added')) {
-    gagalButton.addEventListener(
-      'click',
-      () => {
-        const failedList = document.getElementById('failed-list');
-        if (failedList) {
-          const liFailed = document.createElement('li');
-          liFailed.className =
-            'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-red-200';
-          liFailed.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
-          failedList.appendChild(liFailed);
-          displayAlert(`${habitName} gagal diselesaikan.`, 'error');
-          habitItem.remove();
-        } else {
-          console.error('Elemen failed-list tidak ditemukan.');
-        }
-      },
-      { once: true }
-    );
+  gagalButton.addEventListener(
+  'click',
+  () => {
+    saveTemporaryData("failed", habitName);
+    const failedList = document.getElementById('failed-list');
+    if (failedList) {
+      const liFailed = document.createElement('li');
+      liFailed.className = 'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-red-200';
+      liFailed.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
+      failedList.appendChild(liFailed);
+      displayAlert(`${habitName} gagal diselesaikan.`, 'error');
+      habitItem.remove();
+    }
+  },
+  { once: true }
+);
     gagalButton.setAttribute('data-listener-added', 'true');
   }
 
 
 // Event listener untuk tombol "Finish"
 finishButton.addEventListener('click', () => {
-  const completedList = document.getElementById('completed-list');
-  const failedList = document.getElementById('failed-list');
+  try {
+    const completedList = document.getElementById('completed-list');
+    const failedList = document.getElementById('failed-list');
+    const storageKey = "tempHabitData";
 
-  if (!completedList || !failedList) {
-    console.error("❌ Elemen daftar tidak ditemukan.");
-    displayAlert('❌ Terjadi kesalahan pada elemen daftar!', 'error');
-    return;
+    if (!completedList || !failedList) {
+      throw new Error("Elemen daftar tidak ditemukan.");
+    }
+
+    // Ambil data sementara dari LocalStorage
+    const tempData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    // Ambil data dari daftar yang masih ditampilkan di UI
+    const currentTime = new Date().toISOString();
+    
+    const extractData = (list, status) => 
+      Array.from(list.children)
+        .map(li => ({
+          nama: li.textContent.split('(')[0].trim(),
+          tanggal: currentTime,
+          status
+        }))
+        .filter(item => item.nama);
+
+    const completedData = extractData(completedList, true);
+    const failedData = extractData(failedList, false);
+
+    // Gabungkan semua data yang ditemukan
+    const combinedData = [...tempData, ...completedData, ...failedData];
+
+    if (combinedData.length === 0) {
+      displayAlert('❌ Belum ada data yang diselesaikan atau gagal!', 'error');
+      return;
+    }
+
+    // Konfirmasi sebelum menyimpan
+    const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
+    if (!userConfirmed) return;
+
+    // Ambil data lama dari LocalStorage utama
+    const existingData = getHabitData();
+    const newData = [...existingData, ...combinedData];
+
+    saveHabitData(newData);
+    console.log("✅ Data berhasil disimpan ke LocalStorage:", newData);
+    displayAlert('✅ Data berhasil disimpan!', 'success');
+
+    // Kosongkan daftar setelah disimpan
+    while (completedList.firstChild) completedList.removeChild(completedList.firstChild);
+    while (failedList.firstChild) failedList.removeChild(failedList.firstChild);
+
+    // Hapus data sementara dari localStorage
+    localStorage.removeItem(storageKey);
+
+  } catch (error) {
+    console.error("❌ Terjadi kesalahan:", error.message);
+    displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
   }
-
-  if (completedList.children.length === 0 && failedList.children.length === 0) {
-    displayAlert('❌ Belum ada data yang diselesaikan atau gagal!', 'error');
-    return;
-  }
-
-  const currentTime = new Date().toISOString();
-
-  const completedData = Array.from(completedList.children).map(li => ({
-    nama: li.textContent.split('(')[0].trim(),
-    tanggal: currentTime,
-    status: true,
-  })).filter(item => item.nama);
-
-  const failedData = Array.from(failedList.children).map(li => ({
-    nama: li.textContent.split('(')[0].trim(),
-    tanggal: currentTime,
-    status: false,
-  })).filter(item => item.nama);
-
-  if (completedData.length === 0 && failedData.length === 0) {
-    displayAlert('❌ Tidak ada data yang dapat disimpan!', 'error');
-    return;
-  }
-
-  // Ambil data lama, tambahkan yang baru, lalu simpan ke LocalStorage
-  const existingData = getHabitData();
-  const newData = [...existingData, ...completedData, ...failedData];
-  saveHabitData(newData);
-
-  console.log("✅ Data berhasil disimpan ke LocalStorage:", newData);
-  displayAlert('✅ Data berhasil disimpan!', 'success');
-
-  // Kosongkan daftar setelah disimpan
-  completedList.innerHTML = '';
-  failedList.innerHTML = '';
 });
 
 }
