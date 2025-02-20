@@ -392,30 +392,47 @@ function initHabitTracker() {
   const habitTime = document.getElementById('habit-time');
   const habitList = document.getElementById('habit-list');
 
-  document.getElementById('add-habit').addEventListener('click', async () => {
-    const habitName = habitInput.value.trim();
-    const time = habitTime.value;
+  document.getElementById('add-habit').addEventListener('click', () => {
+  const habitName = habitInput.value.trim();
+  const time = habitTime.value;
 
-    if (!habitName || !time) {
-      displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
-      return;
-    }
+  if (!habitName || !time) {
+    displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
+    return;
+  }
 
-    const targetTime = parseTime(time);
-    const now = new Date();
+  const targetTime = new Date(time);
+  const now = new Date();
 
-    if (targetTime <= now) {
-      displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
-      return;
-    }
+  if (targetTime <= now) {
+    displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
+    return;
+  }
 
-    const habitItem = createHabitItem(habitName, time);
-    habitList.appendChild(habitItem);
-    resetInputs(habitInput, habitTime);
+  let habits = getHabitData();
 
-    const delay = targetTime - now;
-    setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
+  // Hindari duplikasi kebiasaan yang sama
+  if (!habits.some(h => h.nama === habitName && h.waktu === time)) {
+    const newHabit = { nama: habitName, waktu: time, status: null };
+    habits.push(newHabit);
+    saveHabitData(habits);
+  }
+
+  const habitItem = createHabitItem(habitName, time);
+  habitList.appendChild(habitItem);
+  resetInputs(habitInput, habitTime);
+
+  const delay = targetTime - now;
+  setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
+});
+function loadHabits() {
+  const habits = getHabitData();
+  habits.forEach(habit => {
+    const habitItem = createHabitItem(habit.nama, habit.waktu, habit.status);
+    document.getElementById('habit-list').appendChild(habitItem);
   });
+}
+loadHabits();
 }
 
 // Fungsi untuk menambah kebiasaan
