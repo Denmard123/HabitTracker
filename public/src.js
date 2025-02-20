@@ -661,17 +661,9 @@ function renderSettings() {
 
 // Fungsi pengaturan tema dan lainnya
 function setting() {
-  console.log("🔧 Menginisialisasi pengaturan...");
-
   const themeSelect = document.getElementById("theme");
   const languageSelect = document.getElementById("language");
   const notificationsCheckbox = document.getElementById("notifications");
-  const settingsForm = document.getElementById("settingsForm");
-
-  if (!themeSelect || !languageSelect || !notificationsCheckbox || !settingsForm) {
-    console.warn("⚠️ Elemen pengaturan tidak ditemukan. Pastikan elemen dengan ID 'theme', 'language', 'notifications', dan 'settingsForm' ada di HTML.");
-    return;
-  }
 
   // Ambil pengaturan dari localStorage jika tersedia
   const savedTheme = localStorage.getItem("theme") || "light";
@@ -683,7 +675,7 @@ function setting() {
   languageSelect.value = savedLanguage;
   notificationsCheckbox.checked = savedNotifications;
 
-  // Terapkan tema gelap jika tersimpan di localStorage
+  // Terapkan tema
   applyDarkMode(savedTheme === "dark");
 
   // Fungsi untuk menyimpan pengaturan
@@ -691,38 +683,38 @@ function setting() {
     localStorage.setItem("theme", themeSelect.value);
     localStorage.setItem("language", languageSelect.value);
     localStorage.setItem("notifications", notificationsCheckbox.checked);
-    console.log("✅ Pengaturan telah disimpan.");
+
+    // Terapkan perubahan tema langsung
+    applyDarkMode(themeSelect.value === "dark");
+
+    // Render ulang halaman setelah perubahan pengaturan
+    renderHabitTracker('settings');
   }
 
   // Event listener untuk mengubah tema
-  themeSelect.addEventListener("change", function () {
-    const isDark = themeSelect.value === "dark";
-    applyDarkMode(isDark);
-    saveSettings();
-  });
+  themeSelect.addEventListener("change", saveSettings);
 
   // Event listener untuk mengubah bahasa
   languageSelect.addEventListener("change", function () {
     saveSettings();
-    console.log("🌍 Bahasa diubah ke: " + (languageSelect.value === "id" ? "Indonesia" : "English"));
+    alert("Bahasa telah diubah ke " + (languageSelect.value === "id" ? "Indonesia" : "English"));
   });
 
   // Event listener untuk notifikasi
   notificationsCheckbox.addEventListener("change", function () {
     saveSettings();
-    console.log(notificationsCheckbox.checked ? "🔔 Notifikasi diaktifkan" : "🔕 Notifikasi dinonaktifkan");
+    alert(notificationsCheckbox.checked ? "Notifikasi diaktifkan" : "Notifikasi dinonaktifkan");
   });
 
   // Simpan pengaturan ketika formulir dikirim
-  settingsForm.addEventListener("submit", function (event) {
-    event.preventDefault(); // Mencegah reload halaman
-    saveSettings();
-    console.log("🛠 Pengaturan telah disimpan!");
-
-    // Pastikan perubahan tema diterapkan
-    const isDark = themeSelect.value === "dark";
-    applyDarkMode(isDark);
-  });
+  const settingsForm = document.getElementById("settings-form");
+  if (settingsForm) {
+    settingsForm.addEventListener("submit", function (event) {
+      event.preventDefault(); // Mencegah reload halaman
+      saveSettings(); // Simpan pengaturan
+      alert("Pengaturan telah disimpan!");
+    });
+  }
 }
 
 // Fungsi untuk menerapkan tema gelap (dark mode)
