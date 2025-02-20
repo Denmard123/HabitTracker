@@ -52,6 +52,7 @@ function renderHabitTracker(activeFeature = 'dashboard') {
     updateCalendar();
   } else if (activeFeature === 'habit-list') {
     initHabitTracker();
+    loadHabits();
   } else if (activeFeature === 'rekapitulasi') {
     setTimeout(fetchAndRenderRekapitulasi, 0);
   }
@@ -535,8 +536,6 @@ function initHabitTracker() {
     setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
   });
 
-  // Panggil loadHabits saat halaman dimuat
-  window.addEventListener('load', loadHabits);
 }
 
 // Fungsi untuk menambah kebiasaan
