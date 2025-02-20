@@ -52,7 +52,6 @@ function renderHabitTracker(activeFeature = 'dashboard') {
     updateCalendar();
   } else if (activeFeature === 'habit-list') {
     initHabitTracker();
-    loadHabits();
   } else if (activeFeature === 'rekapitulasi') {
     setTimeout(fetchAndRenderRekapitulasi, 0);
   }
@@ -488,8 +487,11 @@ function initHabitTracker() {
 
     const now = new Date();
 
-    // Hapus yang sudah kadaluarsa
+    // Filter hanya yang masih berlaku
     storedHabits = storedHabits.filter(({ targetTime }) => targetTime > now.getTime());
+
+    // Hapus dulu daftar biar gak duplikat saat refresh
+    habitList.innerHTML = "";
 
     storedHabits.forEach(({ nama, waktu, targetTime }) => {
       const habitItem = createHabitItem(nama, waktu);
@@ -501,7 +503,7 @@ function initHabitTracker() {
       }
     });
 
-    // Simpan ulang habit yang masih valid
+    // Simpan ulang habit yang masih valid ke localStorage
     localStorage.setItem(storageKey, JSON.stringify(storedHabits));
   }
 
@@ -536,6 +538,8 @@ function initHabitTracker() {
     setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
   });
 
+  // **Pastikan loadHabits dipanggil setelah UI siap**
+  loadHabits();
 }
 
 // Fungsi untuk menambah kebiasaan
@@ -619,34 +623,32 @@ finishButton.addEventListener('click', () => {
     const completedList = document.getElementById('completed-list');
     const failedList = document.getElementById('failed-list');
     const storageKey = "tempHabitData";
-
+    
     if (!completedList || !failedList) {
       throw new Error("Elemen daftar tidak ditemukan.");
     }
 
     // Ambil data sementara dari LocalStorage
     const tempData = JSON.parse(localStorage.getItem(storageKey)) || [];
-
-    // Ambil data dari daftar yang masih ditampilkan di UI
-    const currentTime = new Date().toISOString();
     
+    // Fungsi untuk mengambil data dari daftar UI
     const extractData = (list, status) => 
       Array.from(list.children)
         .map(li => ({
           nama: li.textContent.split('(')[0].trim(),
-          tanggal: currentTime,
+          tanggal: new Date().toISOString(),
           status
         }))
         .filter(item => item.nama);
 
-    const completedData = extractData(completedList, true);
-    const failedData = extractData(failedList, false);
+    const completedData = extractData(completedList, "selesai");
+    const failedData = extractData(failedList, "gagal");
 
-    // Gabungkan semua data yang ditemukan
-    const combinedData = [...tempData, ...completedData, ...failedData];
+    // Cek apakah ada data baru untuk disimpan
+    const newData = [...completedData, ...failedData];
 
-    if (combinedData.length === 0) {
-      displayAlert('❌ Belum ada data yang diselesaikan atau gagal!', 'error');
+    if (newData.length === 0) {
+      displayAlert('❌ Tidak ada data baru untuk disimpan!', 'error');
       return;
     }
 
@@ -654,19 +656,20 @@ finishButton.addEventListener('click', () => {
     const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
     if (!userConfirmed) return;
 
-    // Ambil data lama dari LocalStorage utama
-    const existingData = getHabitData();
-    const newData = [...existingData, ...combinedData];
+    // Ambil data lama dari LocalStorage utama tanpa menimpa
+    const existingData = getHabitData(); // Pastikan fungsi ini mengambil data yang sudah ada
+    const finalData = [...existingData, ...newData];
 
-    saveHabitData(newData);
-    console.log("✅ Data berhasil disimpan ke LocalStorage:", newData);
-    displayAlert('✅ Data berhasil disimpan!', 'success');
+    // Simpan data baru ke penyimpanan lokal/server
+    saveHabitData(finalData);
+    console.log("✅ Data terbaru berhasil disimpan:", newData);
+    displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
 
-    // Kosongkan daftar setelah disimpan
-    while (completedList.firstChild) completedList.removeChild(completedList.firstChild);
-    while (failedList.firstChild) failedList.removeChild(failedList.firstChild);
+    // Kosongkan hanya data yang baru disimpan
+    completedList.innerHTML = '';
+    failedList.innerHTML = '';
 
-    // Hapus data sementara dari localStorage
+    // Hapus data sementara tanpa menyentuh data lama
     localStorage.removeItem(storageKey);
 
   } catch (error) {
@@ -674,6 +677,7 @@ finishButton.addEventListener('click', () => {
     displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
   }
 });
+
 
 }
 
