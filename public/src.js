@@ -268,17 +268,6 @@ function saveHabitData(data) {
   localStorage.setItem('habitTrackerData', JSON.stringify(data));
 }
 
-function getPendingHabits() {
-  const habits = JSON.parse(localStorage.getItem('pendingHabits')) || [];
-  console.log("Data dari localStorage saat load:", habits); // Debugging
-  return habits;
-}
-
-function savePendingHabits(habits) {
-  console.log("Data yang disimpan ke localStorage:", habits); // Debugging
-  localStorage.setItem('pendingHabits', JSON.stringify(habits));
-}
-
 
 
 // Fungsi untuk mengambil dan merender data di halaman rekapitulasi
@@ -442,9 +431,22 @@ function initializeChart() {
   });
 }
 
-  function saveTemporaryData(type, habitName) {
+function saveTemporaryData(type, habitName) {
   const storageKey = "tempHabitData";
   const existingData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+  if (!habitName.trim()) {
+    console.error("❌ Nama kebiasaan tidak boleh kosong!");
+    displayAlert("❌ Nama kebiasaan tidak boleh kosong!", "error");
+    return;
+  }
+
+  // Hindari duplikasi
+  if (existingData.some(item => item.nama === habitName)) {
+    console.warn("⚠️ Habit sudah ada di daftar sementara.");
+    displayAlert(`⚠️ Habit "${habitName}" sudah ada di daftar sementara!`, "warning");
+    return;
+  }
 
   existingData.push({
     nama: habitName,
@@ -453,68 +455,88 @@ function initializeChart() {
   });
 
   localStorage.setItem(storageKey, JSON.stringify(existingData));
+
+  console.log(`✅ Habit "${habitName}" disimpan sementara!`);
+  displayAlert(`✅ Habit "${habitName}" berhasil disimpan!`, "success");
 }
+
 
 // Fungsi untuk menginisialisasi tracker kebiasaan
 function initHabitTracker() {
   const habitInput = document.getElementById('habit-input');
   const habitTime = document.getElementById('habit-time');
   const habitList = document.getElementById('habit-list');
+  const storageKey = "tempHabitData";
 
-document.getElementById('add-habit').addEventListener('click', () => {
-  const habitName = habitInput.value.trim();
-  const time = habitTime.value;
+  // Fungsi untuk menyimpan ke localStorage
+  function saveTemporaryData(habitName, time) {
+    const existingData = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const targetTime = parseTime(time);
 
-  if (!habitName || !time) {
-    displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
-    return;
+    // Cegah duplikasi data
+    if (existingData.some(item => item.nama === habitName)) return;
+
+    existingData.push({ nama: habitName, waktu: time, targetTime: targetTime.getTime() });
+    localStorage.setItem(storageKey, JSON.stringify(existingData));
   }
 
-  const targetTime = parseTime(time);
-  const now = new Date();
+  // Fungsi untuk memuat kebiasaan dari localStorage
+  function loadHabits() {
+    let storedHabits = JSON.parse(localStorage.getItem(storageKey)) || [];
+    console.log("📥 Memuat habit dari localStorage:", storedHabits);
 
-  if (targetTime <= now) {
-    displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
-    return;
+    const now = new Date();
+
+    // Hapus yang sudah kadaluarsa
+    storedHabits = storedHabits.filter(({ targetTime }) => targetTime > now.getTime());
+
+    storedHabits.forEach(({ nama, waktu, targetTime }) => {
+      const habitItem = createHabitItem(nama, waktu);
+      habitList.appendChild(habitItem);
+
+      const delay = targetTime - now.getTime();
+      if (delay > 0) {
+        setTimeout(() => handleTimeout(habitItem, nama, waktu), delay);
+      }
+    });
+
+    // Simpan ulang habit yang masih valid
+    localStorage.setItem(storageKey, JSON.stringify(storedHabits));
   }
 
-  const habitItem = createHabitItem(habitName, time);
-  habitList.appendChild(habitItem);
-  resetInputs(habitInput, habitTime);
+  // Tambahkan kebiasaan baru
+  document.getElementById('add-habit').addEventListener('click', () => {
+    const habitName = habitInput.value.trim();
+    const time = habitTime.value;
 
-  // Simpan ke LocalStorage supaya tidak hilang
-  let pendingHabits = getPendingHabits();
-  pendingHabits.push({ nama: habitName, waktu: time, targetTime: targetTime.getTime() });
-  savePendingHabits(pendingHabits);
-
-  console.log("Habit berhasil disimpan:", pendingHabits); // Debugging
-
-  const delay = targetTime - now;
-  setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
-});
-
-  window.addEventListener('load', () => {
-  let pendingHabits = getPendingHabits();
-  console.log("Data habit sebelum difilter:", pendingHabits); // Debugging
-
-  const now = new Date();
-
-  pendingHabits = pendingHabits.filter(({ targetTime }) => targetTime > now.getTime()); // Hapus yang sudah kadaluarsa
-  console.log("Data habit setelah difilter:", pendingHabits); // Debugging
-
-  pendingHabits.forEach(({ nama, waktu, targetTime }) => {
-    const habitItem = createHabitItem(nama, waktu);
-    habitList.appendChild(habitItem);
-
-    const delay = targetTime - now.getTime();
-    if (delay > 0) {
-      setTimeout(() => handleTimeout(habitItem, nama, waktu), delay);
+    if (!habitName || !time) {
+      displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
+      return;
     }
+
+    const targetTime = parseTime(time);
+    const now = new Date();
+
+    if (targetTime <= now) {
+      displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
+      return;
+    }
+
+    const habitItem = createHabitItem(habitName, time);
+    habitList.appendChild(habitItem);
+    resetInputs(habitInput, habitTime);
+
+    // Simpan ke localStorage
+    saveTemporaryData(habitName, time);
+
+    console.log("✅ Habit berhasil disimpan:", habitName);
+
+    const delay = targetTime - now;
+    setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
   });
 
-  savePendingHabits(pendingHabits); // Simpan ulang data pending yang valid
-});
-
+  // Panggil loadHabits saat halaman dimuat
+  window.addEventListener('load', loadHabits);
 }
 
 // Fungsi untuk menambah kebiasaan
@@ -536,11 +558,6 @@ function createHabitItem(habitName, time) {
 // Fungsi untuk menangani timeout dan mengelola status kebiasaan
 function handleTimeout(habitItem, habitName, time) {
   displayAlert(`Saatnya ${habitName}!`, 'info');
-  habitItem.remove();
-
-  let pendingHabits = getPendingHabits();
-  pendingHabits = pendingHabits.filter(habit => habit.nama !== habitName || habit.waktu !== time);
-  savePendingHabits(pendingHabits);
 
   const selesaiButton = habitItem.querySelector('.selesai-button');
   const gagalButton = habitItem.querySelector('.gagal-button');
