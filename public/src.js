@@ -566,7 +566,6 @@ function handleTimeout(habitItem, habitName, time) {
   const gagalButton = habitItem.querySelector('.gagal-button');
   const finishButton = document.getElementById('finish');
 
-  // Pastikan tombol sudah dalam keadaan terlihat dan dapat diklik
   selesaiButton.classList.remove('hidden');
   gagalButton.classList.remove('hidden');
   finishButton.classList.remove('hidden');
@@ -574,112 +573,90 @@ function handleTimeout(habitItem, habitName, time) {
   selesaiButton.classList.add('transition-transform', 'hover:scale-110');
   gagalButton.classList.add('transition-transform', 'hover:scale-110');
 
-  // Menghindari penambahan event listener yang berulang
   if (!selesaiButton.hasAttribute('data-listener-added')) {
     selesaiButton.addEventListener(
-  'click',
-  () => {
-    saveTemporaryData("completed", habitName);
-    const completedList = document.getElementById('completed-list');
-    if (completedList) {
-      const liCompleted = document.createElement('li');
-      liCompleted.className = 'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-green-200';
-      liCompleted.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
-      completedList.appendChild(liCompleted);
-      displayAlert(`${habitName} selesai!`, 'success');
-      habitItem.remove();
-    }
-  },
-  { once: true }
-);
+      'click',
+      () => {
+        saveTemporaryData("completed", habitName);
+        const completedList = document.getElementById('completed-list');
+        if (completedList) {
+          const liCompleted = document.createElement('li');
+          liCompleted.className = 'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-green-200';
+          liCompleted.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
+          completedList.appendChild(liCompleted);
+          habitItem.remove();
+        }
+      },
+      { once: true }
+    );
     selesaiButton.setAttribute('data-listener-added', 'true');
   }
 
-  // Menambahkan event listener untuk tombol gagal jika belum ada
   if (!gagalButton.hasAttribute('data-listener-added')) {
-  gagalButton.addEventListener(
-  'click',
-  () => {
-    saveTemporaryData("failed", habitName);
-    const failedList = document.getElementById('failed-list');
-    if (failedList) {
-      const liFailed = document.createElement('li');
-      liFailed.className = 'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-red-200';
-      liFailed.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
-      failedList.appendChild(liFailed);
-      displayAlert(`${habitName} gagal diselesaikan.`, 'error');
-      habitItem.remove();
-    }
-  },
-  { once: true }
-);
+    gagalButton.addEventListener(
+      'click',
+      () => {
+        saveTemporaryData("failed", habitName);
+        const failedList = document.getElementById('failed-list');
+        if (failedList) {
+          const liFailed = document.createElement('li');
+          liFailed.className = 'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-red-200';
+          liFailed.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
+          failedList.appendChild(liFailed);
+          habitItem.remove();
+        }
+      },
+      { once: true }
+    );
     gagalButton.setAttribute('data-listener-added', 'true');
   }
 
+  finishButton.addEventListener('click', () => {
+    try {
+      const completedList = document.getElementById('completed-list');
+      const failedList = document.getElementById('failed-list');
+      const storageKey = "tempHabitData";
 
-// Event listener untuk tombol "Finish"
-finishButton.addEventListener('click', () => {
-  try {
-    const completedList = document.getElementById('completed-list');
-    const failedList = document.getElementById('failed-list');
-    const storageKey = "tempHabitData";
-    
-    if (!completedList || !failedList) {
-      throw new Error("Elemen daftar tidak ditemukan.");
-    }
+      if (!completedList || !failedList) {
+        throw new Error("Elemen daftar tidak ditemukan.");
+      }
 
-    // Ambil data sementara dari LocalStorage
-    const tempData = JSON.parse(localStorage.getItem(storageKey)) || [];
-    
-    // Fungsi untuk mengambil data dari daftar UI
-    const extractData = (list, status) => 
-      Array.from(list.children)
-        .map(li => ({
+      const tempData = JSON.parse(localStorage.getItem(storageKey)) || [];
+      const extractData = (list, status) => 
+        Array.from(list.children).map(li => ({
           nama: li.textContent.split('(')[0].trim(),
           tanggal: new Date().toISOString(),
           status
-        }))
-        .filter(item => item.nama);
+        })).filter(item => item.nama);
 
-    const completedData = extractData(completedList, "selesai");
-    const failedData = extractData(failedList, "gagal");
+      const completedData = extractData(completedList, "selesai");
+      const failedData = extractData(failedList, "gagal");
+      const newData = [...completedData, ...failedData];
 
-    // Cek apakah ada data baru untuk disimpan
-    const newData = [...completedData, ...failedData];
+      if (newData.length === 0) {
+        return displayAlert('❌ Tidak ada data baru untuk disimpan!', 'warning');
+      }
 
-    if (newData.length === 0) {
-      displayAlert('❌ Tidak ada data baru untuk disimpan!', 'error');
-      return;
+      const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
+      if (!userConfirmed) return;
+
+      const existingData = getHabitData();
+      const finalData = [...existingData, ...newData];
+
+      saveHabitData(finalData);
+      displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
+
+      completedList.innerHTML = '';
+      failedList.innerHTML = '';
+      localStorage.removeItem(storageKey);
+
+    } catch (error) {
+      console.error("❌ Terjadi kesalahan:", error.message);
+      displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
     }
-
-    // Konfirmasi sebelum menyimpan
-    const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
-    if (!userConfirmed) return;
-
-    // Ambil data lama dari LocalStorage utama tanpa menimpa
-    const existingData = getHabitData(); // Pastikan fungsi ini mengambil data yang sudah ada
-    const finalData = [...existingData, ...newData];
-
-    // Simpan data baru ke penyimpanan lokal/server
-    saveHabitData(finalData);
-    console.log("✅ Data terbaru berhasil disimpan:", newData);
-    displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
-
-    // Kosongkan hanya data yang baru disimpan
-    completedList.innerHTML = '';
-    failedList.innerHTML = '';
-
-    // Hapus data sementara tanpa menyentuh data lama
-    localStorage.removeItem(storageKey);
-
-  } catch (error) {
-    console.error("❌ Terjadi kesalahan:", error.message);
-    displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
-  }
-});
-
-
+  });
 }
+
 
 // Fungsi untuk reset input
 function resetInputs(habitInput, habitTime) {
