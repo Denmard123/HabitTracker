@@ -250,6 +250,9 @@ function renderRekapitulasi() {
       <!-- Data akan dirender di sini -->
     </tbody>
   </table>
+  <button id="reset-rekap" class="bg-red-500 text-white px-4 py-2 mt-4 rounded-lg">
+      Reset Data
+    </button>
   
   `;
 }
@@ -303,7 +306,26 @@ function fetchAndRenderRekapitulasi() {
   `).join('');
 }
 
+// Fungsi untuk menghapus data rekapitulasi dari LocalStorage
+function resetRekapitulasi() {
+  if (confirm("⚠️ Apakah Anda yakin ingin menghapus semua data rekapitulasi?")) {
+    try {
+      localStorage.removeItem("habitTrackerData"); // Hapus semua data
+      fetchAndRenderRekapitulasi(); // Perbarui tampilan setelah reset
+      alert("✅ Data rekapitulasi berhasil dihapus!");
+    } catch (error) {
+      console.error("❌ Error saat menghapus data rekapitulasi:", error);
+      alert("❌ Gagal menghapus data rekapitulasi. Coba lagi!");
+    }
+  }
+}
 
+// Event listener untuk tombol reset setelah halaman dirender
+document.addEventListener("click", (event) => {
+  if (event.target.id === "reset-rekap") {
+    resetRekapitulasi();
+  }
+});
 
   // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
   function initializeChart() {
