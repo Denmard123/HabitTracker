@@ -473,7 +473,9 @@ document.getElementById('add-habit').addEventListener('click', async () => {
   const delay = targetTime - now;
   setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
 });
-window.addEventListener('load', () => {
+
+}
+  window.addEventListener('load', () => {
   let pendingHabits = getPendingHabits();
   const now = new Date();
 
@@ -491,9 +493,6 @@ window.addEventListener('load', () => {
 
   savePendingHabits(pendingHabits); // Simpan ulang data pending yang valid
 });
-
-
-}
 
 // Fungsi untuk menambah kebiasaan
 function createHabitItem(habitName, time) {
@@ -518,11 +517,6 @@ function handleTimeout(habitItem, habitName, time) {
   const selesaiButton = habitItem.querySelector('.selesai-button');
   const gagalButton = habitItem.querySelector('.gagal-button');
   const finishButton = document.getElementById('finish');
-  habitItem.remove();
-
-  let pendingHabits = getPendingHabits();
-  pendingHabits = pendingHabits.filter(habit => habit.nama !== habitName || habit.waktu !== time);
-  savePendingHabits(pendingHabits);
 
   // Pastikan tombol sudah dalam keadaan terlihat dan dapat diklik
   selesaiButton.classList.remove('hidden');
