@@ -402,11 +402,16 @@ function initializeChart() {
 }
   
 // Fungsi untuk menginisialisasi tracker kebiasaan
-function initHabitTracker() {  
+function initHabitTracker() {
   const habitInput = document.getElementById("habit-input");
   const habitTime = document.getElementById("habit-time");
   const habitList = document.getElementById("habit-list");
   const finishButton = document.getElementById("finish");
+  
+  if (!habitInput || !habitTime || !habitList || !finishButton) {
+    console.error("Elemen yang diperlukan tidak ditemukan di dalam DOM.");
+    return;
+  }
 
   document.getElementById("add-habit").addEventListener("click", () => {
     const habitName = habitInput.value.trim();
@@ -414,14 +419,6 @@ function initHabitTracker() {
 
     if (!habitName || !time) {
       displayAlert("Harap masukkan kegiatan dan waktu.", "error");
-      return;
-    }
-
-    const targetTime = new Date(time);
-    const now = new Date();
-
-    if (targetTime <= now) {
-      displayAlert("Waktu sudah terlewat. Pilih waktu yang valid.", "error");
       return;
     }
 
@@ -435,9 +432,7 @@ function initHabitTracker() {
 
     const habitItem = createHabitItem(habitName, time);
     habitList.appendChild(habitItem);
-    resetInputs(habitInput, habitTime);
-
-    setTimeout(() => handleTimeout(habitItem, habitName, time), targetTime - now);
+    resetInputs();
   });
 
   finishButton.addEventListener("click", handleFinish);
@@ -492,11 +487,11 @@ function handleFinish() {
   failedList.innerHTML = "";
 }
 
+// Fungsi untuk mereset input setelah menambahkan kebiasaan
 function resetInputs() {
-    document.getElementById("habit-input").value = "";
-    document.getElementById("habit-time").value = "";
+  document.getElementById("habit-input").value = "";
+  document.getElementById("habit-time").value = "";
 }
-
 
 // Fungsi untuk memparsing waktu
 function parseTime(time) {
