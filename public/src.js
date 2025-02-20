@@ -269,12 +269,16 @@ function saveHabitData(data) {
 }
 
 function getPendingHabits() {
-  return JSON.parse(localStorage.getItem('pendingHabits')) || [];
+  const habits = JSON.parse(localStorage.getItem('pendingHabits')) || [];
+  console.log("Data dari localStorage saat load:", habits); // Debugging
+  return habits;
 }
 
 function savePendingHabits(habits) {
+  console.log("Data yang disimpan ke localStorage:", habits); // Debugging
   localStorage.setItem('pendingHabits', JSON.stringify(habits));
 }
+
 
 
 // Fungsi untuk mengambil dan merender data di halaman rekapitulasi
@@ -444,7 +448,7 @@ function initHabitTracker() {
   const habitTime = document.getElementById('habit-time');
   const habitList = document.getElementById('habit-list');
 
-document.getElementById('add-habit').addEventListener('click', async () => {
+document.getElementById('add-habit').addEventListener('click', () => {
   const habitName = habitInput.value.trim();
   const time = habitTime.value;
 
@@ -465,21 +469,25 @@ document.getElementById('add-habit').addEventListener('click', async () => {
   habitList.appendChild(habitItem);
   resetInputs(habitInput, habitTime);
 
-  // Simpan ke LocalStorage supaya gak hilang
-  const pendingHabits = getPendingHabits();
+  // Simpan ke LocalStorage supaya tidak hilang
+  let pendingHabits = getPendingHabits();
   pendingHabits.push({ nama: habitName, waktu: time, targetTime: targetTime.getTime() });
   savePendingHabits(pendingHabits);
+
+  console.log("Habit berhasil disimpan:", pendingHabits); // Debugging
 
   const delay = targetTime - now;
   setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
 });
 
-}
   window.addEventListener('load', () => {
   let pendingHabits = getPendingHabits();
+  console.log("Data habit sebelum difilter:", pendingHabits); // Debugging
+
   const now = new Date();
 
   pendingHabits = pendingHabits.filter(({ targetTime }) => targetTime > now.getTime()); // Hapus yang sudah kadaluarsa
+  console.log("Data habit setelah difilter:", pendingHabits); // Debugging
 
   pendingHabits.forEach(({ nama, waktu, targetTime }) => {
     const habitItem = createHabitItem(nama, waktu);
@@ -493,6 +501,8 @@ document.getElementById('add-habit').addEventListener('click', async () => {
 
   savePendingHabits(pendingHabits); // Simpan ulang data pending yang valid
 });
+
+}
 
 // Fungsi untuk menambah kebiasaan
 function createHabitItem(habitName, time) {
@@ -513,6 +523,11 @@ function createHabitItem(habitName, time) {
 // Fungsi untuk menangani timeout dan mengelola status kebiasaan
 function handleTimeout(habitItem, habitName, time) {
   displayAlert(`Saatnya ${habitName}!`, 'info');
+  habitItem.remove();
+
+  let pendingHabits = getPendingHabits();
+  pendingHabits = pendingHabits.filter(habit => habit.nama !== habitName || habit.waktu !== time);
+  savePendingHabits(pendingHabits);
 
   const selesaiButton = habitItem.querySelector('.selesai-button');
   const gagalButton = habitItem.querySelector('.gagal-button');
