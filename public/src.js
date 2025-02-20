@@ -622,42 +622,42 @@ function parseTime(time) {
 }
 
 // Fungsi untuk merender pengaturan
-function renderSettings() {
-  return `
-    <div class="container mx-auto p-4">
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pengaturan</h2>
-        <form id="settingsForm">
-          <div class="mb-4">
-            <label for="theme" class="block text-gray-700 font-medium">Tema</label>
-            <select id="theme" class="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="light">Terang</option>
-              <option value="dark">Gelap</option>
-            </select>
-          </div>
+// function renderSettings() {
+//   return `
+//     <div class="container mx-auto p-4">
+//       <div class="bg-white shadow-md rounded-lg p-6">
+//         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pengaturan</h2>
+//         <form id="settingsForm">
+//           <div class="mb-4">
+//             <label for="theme" class="block text-gray-700 font-medium">Tema</label>
+//             <select id="theme" class="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+//               <option value="light">Terang</option>
+//               <option value="dark">Gelap</option>
+//             </select>
+//           </div>
 
-          <div class="mb-4">
-            <label for="language" class="block text-gray-700 font-medium">Bahasa</label>
-            <select id="language" class="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="id">Indonesia</option>
-              <option value="en">English</option>
-            </select>
-          </div>
+//           <div class="mb-4">
+//             <label for="language" class="block text-gray-700 font-medium">Bahasa</label>
+//             <select id="language" class="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+//               <option value="id">Indonesia</option>
+//               <option value="en">English</option>
+//             </select>
+//           </div>
 
-          <div class="mb-4">
-            <label for="notifications" class="block text-gray-700 font-medium">Notifikasi</label>
-            <div class="flex items-center mt-2">
-              <input type="checkbox" id="notifications" class="mr-2">
-              <span class="text-gray-700">Aktifkan Notifikasi</span>
-            </div>
-          </div>
+//           <div class="mb-4">
+//             <label for="notifications" class="block text-gray-700 font-medium">Notifikasi</label>
+//             <div class="flex items-center mt-2">
+//               <input type="checkbox" id="notifications" class="mr-2">
+//               <span class="text-gray-700">Aktifkan Notifikasi</span>
+//             </div>
+//           </div>
 
-          <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">Simpan Pengaturan</button>
-        </form>
-      </div>
-    </div>
-  `;
-}
+//           <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">Simpan Pengaturan</button>
+//         </form>
+//       </div>
+//     </div>
+//   `;
+// }
 
 // Fungsi pengaturan tema dan lainnya
 function setting() {
