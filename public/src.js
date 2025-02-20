@@ -406,9 +406,8 @@ function initHabitTracker() {
   const habitInput = document.getElementById("habit-input");
   const habitTime = document.getElementById("habit-time");
   const habitList = document.getElementById("habit-list");
-  const finishButton = document.getElementById("finish");
   
-  if (!habitInput || !habitTime || !habitList || !finishButton) {
+  if (!habitInput || !habitTime || !habitList) {
     console.error("Elemen yang diperlukan tidak ditemukan di dalam DOM.");
     return;
   }
@@ -418,24 +417,19 @@ function initHabitTracker() {
     const time = habitTime.value;
 
     if (!habitName || !time) {
-      displayAlert("Harap masukkan kegiatan dan waktu.", "error");
+      alert("Harap masukkan kebiasaan dan waktu.");
       return;
     }
 
     let habits = getHabitData();
-
-    if (!habits.some((h) => h.nama === habitName && h.waktu === time)) {
-      const newHabit = { nama: habitName, waktu: time, status: null };
-      habits.push(newHabit);
-      saveHabitData(habits);
-    }
-
-    const habitItem = createHabitItem(habitName, time);
-    habitList.appendChild(habitItem);
+    const newHabit = { nama: habitName, waktu: time, status: null };
+    habits.push(newHabit);
+    saveHabitData(habits);
+    
+    habitList.appendChild(createHabitItem(newHabit));
     resetInputs();
   });
 
-  finishButton.addEventListener("click", handleFinish);
   loadHabits();
 }
 
@@ -445,46 +439,55 @@ function loadHabits() {
   const habitList = document.getElementById("habit-list");
 
   habits.forEach((habit) => {
-    const habitItem = createHabitItem(habit.nama, habit.waktu);
-    habitList.appendChild(habitItem);
+    habitList.appendChild(createHabitItem(habit));
   });
 }
 
-// Fungsi untuk menangani penyelesaian kebiasaan
-function handleFinish() {
-  const completedList = document.getElementById("completed-list");
-  const failedList = document.getElementById("failed-list");
+// Fungsi untuk membuat elemen kebiasaan
+function createHabitItem(habit) {
+  const li = document.createElement("li");
+  li.className = "border p-2 rounded-lg flex justify-between items-center";
+  li.innerHTML = `${habit.nama} (${habit.waktu})`;
+  
+  const completeBtn = document.createElement("button");
+  completeBtn.textContent = "Selesai";
+  completeBtn.className = "bg-green-500 text-white px-3 py-1 rounded ml-2";
+  completeBtn.addEventListener("click", () => moveHabit(habit, true));
+  
+  const failBtn = document.createElement("button");
+  failBtn.textContent = "Gagal";
+  failBtn.className = "bg-red-500 text-white px-3 py-1 rounded ml-2";
+  failBtn.addEventListener("click", () => moveHabit(habit, false));
+  
+  li.appendChild(completeBtn);
+  li.appendChild(failBtn);
+  return li;
+}
 
-  if (!completedList || !failedList) {
-    displayAlert("❌ Elemen daftar tidak ditemukan.", "error");
-    return;
-  }
+// Fungsi untuk memindahkan kebiasaan
+function moveHabit(habit, status) {
+  let habits = getHabitData();
+  habits = habits.filter((h) => !(h.nama === habit.nama && h.waktu === habit.waktu));
+  saveHabitData(habits);
+  
+  const targetList = status ? document.getElementById("completed-list") : document.getElementById("failed-list");
+  const li = document.createElement("li");
+  li.textContent = `${habit.nama} (${habit.waktu})`;
+  li.className = status ? "text-green-600" : "text-red-600";
+  targetList.appendChild(li);
+  
+  loadHabits();
+}
 
-  if (completedList.children.length === 0 && failedList.children.length === 0) {
-    displayAlert("❌ Belum ada data yang diselesaikan atau gagal!", "error");
-    return;
-  }
+// Fungsi untuk mendapatkan data kebiasaan dari localStorage
+function getHabitData() {
+  const data = localStorage.getItem("habitTrackerData");
+  return data ? JSON.parse(data) : [];
+}
 
-  const currentTime = new Date().toISOString();
-  const completedData = Array.from(completedList.children).map(li => ({
-    nama: li.textContent.split("(")[0].trim(),
-    tanggal: currentTime,
-    status: true,
-  }));
-
-  const failedData = Array.from(failedList.children).map(li => ({
-    nama: li.textContent.split("(")[0].trim(),
-    tanggal: currentTime,
-    status: false,
-  }));
-
-  const existingRecap = getHabitRecapData();
-  const newRecapData = [...existingRecap, ...completedData, ...failedData];
-  saveHabitRecapData(newRecapData);
-
-  displayAlert("✅ Data berhasil disimpan!", "success");
-  completedList.innerHTML = "";
-  failedList.innerHTML = "";
+// Fungsi untuk menyimpan data kebiasaan ke localStorage
+function saveHabitData(data) {
+  localStorage.setItem("habitTrackerData", JSON.stringify(data));
 }
 
 // Fungsi untuk mereset input setelah menambahkan kebiasaan
@@ -585,72 +588,72 @@ function parseTime(time) {
 // }
 
 // Fungsi pengaturan tema dan lainnya
-function setting() {
-  const themeSelect = document.getElementById("theme");
-  const languageSelect = document.getElementById("language");
-  const notificationsCheckbox = document.getElementById("notifications");
+// function setting() {
+//   const themeSelect = document.getElementById("theme");
+//   const languageSelect = document.getElementById("language");
+//   const notificationsCheckbox = document.getElementById("notifications");
 
-  // Ambil pengaturan dari localStorage jika tersedia
-  const savedTheme = localStorage.getItem("theme") || "light";
-  const savedLanguage = localStorage.getItem("language") || "id";
-  const savedNotifications = localStorage.getItem("notifications") === "true";
+//   // Ambil pengaturan dari localStorage jika tersedia
+//   const savedTheme = localStorage.getItem("theme") || "light";
+//   const savedLanguage = localStorage.getItem("language") || "id";
+//   const savedNotifications = localStorage.getItem("notifications") === "true";
 
-  // Terapkan pengaturan yang tersimpan
-  themeSelect.value = savedTheme;
-  languageSelect.value = savedLanguage;
-  notificationsCheckbox.checked = savedNotifications;
+//   // Terapkan pengaturan yang tersimpan
+//   themeSelect.value = savedTheme;
+//   languageSelect.value = savedLanguage;
+//   notificationsCheckbox.checked = savedNotifications;
 
-  // Terapkan tema
-  applyDarkMode(savedTheme === "dark");
+//   // Terapkan tema
+//   applyDarkMode(savedTheme === "dark");
 
-  // Fungsi untuk menyimpan pengaturan
-  function saveSettings() {
-    localStorage.setItem("theme", themeSelect.value);
-    localStorage.setItem("language", languageSelect.value);
-    localStorage.setItem("notifications", notificationsCheckbox.checked);
+//   // Fungsi untuk menyimpan pengaturan
+//   function saveSettings() {
+//     localStorage.setItem("theme", themeSelect.value);
+//     localStorage.setItem("language", languageSelect.value);
+//     localStorage.setItem("notifications", notificationsCheckbox.checked);
 
-    // Terapkan perubahan tema langsung
-    applyDarkMode(themeSelect.value === "dark");
+//     // Terapkan perubahan tema langsung
+//     applyDarkMode(themeSelect.value === "dark");
 
-    // Render ulang halaman setelah perubahan pengaturan
-    renderHabitTracker('settings');
-  }
+//     // Render ulang halaman setelah perubahan pengaturan
+//     renderHabitTracker('settings');
+//   }
 
-  // Event listener untuk mengubah tema
-  themeSelect.addEventListener("change", saveSettings);
+//   // Event listener untuk mengubah tema
+//   themeSelect.addEventListener("change", saveSettings);
 
-  // Event listener untuk mengubah bahasa
-  languageSelect.addEventListener("change", function () {
-    saveSettings();
-    alert("Bahasa telah diubah ke " + (languageSelect.value === "id" ? "Indonesia" : "English"));
-  });
+//   // Event listener untuk mengubah bahasa
+//   languageSelect.addEventListener("change", function () {
+//     saveSettings();
+//     alert("Bahasa telah diubah ke " + (languageSelect.value === "id" ? "Indonesia" : "English"));
+//   });
 
-  // Event listener untuk notifikasi
-  notificationsCheckbox.addEventListener("change", function () {
-    saveSettings();
-    alert(notificationsCheckbox.checked ? "Notifikasi diaktifkan" : "Notifikasi dinonaktifkan");
-  });
+//   // Event listener untuk notifikasi
+//   notificationsCheckbox.addEventListener("change", function () {
+//     saveSettings();
+//     alert(notificationsCheckbox.checked ? "Notifikasi diaktifkan" : "Notifikasi dinonaktifkan");
+//   });
 
-  // Simpan pengaturan ketika formulir dikirim
-  const settingsForm = document.getElementById("settings-form");
-  if (settingsForm) {
-    settingsForm.addEventListener("submit", function (event) {
-      event.preventDefault(); // Mencegah reload halaman
-      saveSettings(); // Simpan pengaturan
-      alert("Pengaturan telah disimpan!");
-    });
-  }
-}
+//   // Simpan pengaturan ketika formulir dikirim
+//   const settingsForm = document.getElementById("settings-form");
+//   if (settingsForm) {
+//     settingsForm.addEventListener("submit", function (event) {
+//       event.preventDefault(); // Mencegah reload halaman
+//       saveSettings(); // Simpan pengaturan
+//       alert("Pengaturan telah disimpan!");
+//     });
+//   }
+// }
 
-// Fungsi untuk menerapkan tema gelap (dark mode)
-function applyDarkMode(isDark) {
-  const body = document.body;
-  if (isDark) {
-    body.classList.add("dark-mode");
-  } else {
-    body.classList.remove("dark-mode");
-  }
-}
+// // Fungsi untuk menerapkan tema gelap (dark mode)
+// function applyDarkMode(isDark) {
+//   const body = document.body;
+//   if (isDark) {
+//     body.classList.add("dark-mode");
+//   } else {
+//     body.classList.remove("dark-mode");
+//   }
+// }
 
 });
 
