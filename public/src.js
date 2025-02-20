@@ -1,13 +1,13 @@
 // Inisialisasi Supabase Client dengan cara yang benar
-const { createClient } = supabase;
+// const { createClient } = supabase;
 
-const SUPABASE_URL = "https://kxmnvtgnwuhdkrzzpwxi.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA";
+// const SUPABASE_URL = "https://kxmnvtgnwuhdkrzzpwxi.supabase.co";
+// const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA";
 
-// Membuat Supabase Client
-window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// // Membuat Supabase Client
+// window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-console.log('✅ Supabase client berhasil diinisialisasi:', window.supabaseClient);
+// console.log('✅ Supabase client berhasil diinisialisasi:', window.supabaseClient);
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -254,11 +254,21 @@ function renderRekapitulasi() {
   `;
 }
 
+// Fungsi untuk mendapatkan data dari LocalStorage
+function getHabitData() {
+  const data = localStorage.getItem('habitTrackerData');
+  return data ? JSON.parse(data) : [];
+}
 
-// Fungsi fetch rekapitulasi dari Supabase
-async function fetchAndRenderRekapitulasi() {
-  console.log("🔍 Mengambil data rekapitulasi dari Supabase...");
-  
+// Fungsi untuk menyimpan data ke LocalStorage
+function saveHabitData(data) {
+  localStorage.setItem('habitTrackerData', JSON.stringify(data));
+}
+
+// Fungsi untuk mengambil dan merender data di halaman rekapitulasi
+function fetchAndRenderRekapitulasi() {
+  console.log("🔍 Mengambil data rekapitulasi dari LocalStorage...");
+
   const tableBody = document.querySelector("#rekapitulasi-table tbody");
 
   if (!tableBody) {
@@ -266,53 +276,32 @@ async function fetchAndRenderRekapitulasi() {
     return;
   }
 
-  tableBody.innerHTML = ''; // Kosongkan tabel sebelum fetch
+  tableBody.innerHTML = ''; // Kosongkan tabel sebelum render
 
-  try {
-    if (!supabase) {
-      throw new Error("Supabase belum terinisialisasi.");
-    }
+  const data = getHabitData();
 
-    const { data, error } = await window.supabaseClient
-      .from('HT')
-      .select('*');
-
-    if (error) throw error;
-
-    if (!data || data.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="4" class="border px-4 py-2 text-center text-gray-500">
-            ⚠️ Belum ada data rekapitulasi.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    console.log("✅ Data rekapitulasi diterima:", data);
-
-    tableBody.innerHTML = data.map((item, index) => `
-      <tr>
-        <td class="border px-4 py-2">${index + 1}</td>
-        <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
-        <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td>
-        <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
-      </tr>
-    `).join('');
-
-  } catch (error) {
-    console.error("❌ Error fetching data dari Supabase:", error);
+  if (!data || data.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="4" class="border px-4 py-2 text-center text-red-500">
-          Terjadi kesalahan saat mengambil data.
+        <td colspan="4" class="border px-4 py-2 text-center text-gray-500">
+          ⚠️ Belum ada data rekapitulasi.
         </td>
       </tr>
     `;
+    return;
   }
-}
 
+  console.log("✅ Data rekapitulasi dari LocalStorage:", data);
+
+  tableBody.innerHTML = data.map((item, index) => `
+    <tr>
+      <td class="border px-4 py-2">${index + 1}</td>
+      <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
+      <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td>
+      <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
+    </tr>
+  `).join('');
+}
 
 
 
@@ -503,7 +492,7 @@ function handleTimeout(habitItem, habitName, time) {
 
 
 // Event listener untuk tombol "Finish"
-finishButton.addEventListener('click', async () => {
+finishButton.addEventListener('click', () => {
   const completedList = document.getElementById('completed-list');
   const failedList = document.getElementById('failed-list');
 
@@ -524,44 +513,31 @@ finishButton.addEventListener('click', async () => {
     nama: li.textContent.split('(')[0].trim(),
     tanggal: currentTime,
     status: true,
-  })).filter(item => item.nama); // Pastikan tidak ada nama yang kosong
+  })).filter(item => item.nama);
 
   const failedData = Array.from(failedList.children).map(li => ({
     nama: li.textContent.split('(')[0].trim(),
     tanggal: currentTime,
     status: false,
-  })).filter(item => item.nama); // Pastikan tidak ada nama yang kosong
-
-  console.log("📤 Data yang akan dikirim ke Supabase:", { completedData, failedData });
+  })).filter(item => item.nama);
 
   if (completedData.length === 0 && failedData.length === 0) {
     displayAlert('❌ Tidak ada data yang dapat disimpan!', 'error');
     return;
   }
 
-  try {
-    if (!supabase) {
-      throw new Error("Supabase belum terinisialisasi.");
-    }
+  // Ambil data lama, tambahkan yang baru, lalu simpan ke LocalStorage
+  const existingData = getHabitData();
+  const newData = [...existingData, ...completedData, ...failedData];
+  saveHabitData(newData);
 
-    const { data, error } = await window.supabaseClient
-      .from('HT')
-      .insert([...completedData, ...failedData]);
+  console.log("✅ Data berhasil disimpan ke LocalStorage:", newData);
+  displayAlert('✅ Data berhasil disimpan!', 'success');
 
-    if (error) throw error;
-
-    console.log("✅ Data berhasil disimpan:", data);
-    displayAlert('✅ Data berhasil disimpan!', 'success');
-
-    completedList.innerHTML = '';  
-    failedList.innerHTML = '';    
-
-  } catch (error) {
-    console.error("❌ Error menyimpan data ke Supabase:", error);
-    displayAlert(`❌ Gagal menyimpan data: ${error.message}`, 'error');
-  }
+  // Kosongkan daftar setelah disimpan
+  completedList.innerHTML = '';
+  failedList.innerHTML = '';
 });
-
 
 }
 
