@@ -40,39 +40,39 @@ function renderHabitTracker(activeFeature = 'dashboard') {
       </div>
     </div>
   `;
-   // Setelah elemen dirender, terapkan pengaturan
-   if (activeFeature === 'settings') {
-    setting();  // Memanggil setting() di sini untuk memastikan pengaturan diterapkan
-  }
 
-  // Pastikan dipanggil setelah elemen sudah dirende
-  if (activeFeature === 'dashboard') {
-    initializeChart();
-    displayCurrentTime();
-    updateCalendar();
-  } else if (activeFeature === 'habit-list') {
-    initHabitTracker();
-  } else if (activeFeature === 'rekapitulasi') {
-    setTimeout(fetchAndRenderRekapitulasi, 0);
+  // Setelah elemen dirender, panggil fungsi yang sesuai
+  setTimeout(() => {
+    if (activeFeature === 'settings') {
+      setting();  // Memastikan pengaturan diterapkan setelah halaman settings dirender
+    } else if (activeFeature === 'dashboard') {
+      initializeChart();
+      displayCurrentTime();
+      updateCalendar();
+    } else if (activeFeature === 'habit-list') {
+      initHabitTracker();
+    } else if (activeFeature === 'rekapitulasi') {
+      fetchAndRenderRekapitulasi();
+    }
+  }, 0);
+}
+
+// Fungsi konten dengan fitur yang aktif
+function renderContentByFeature(activeFeature) {
+  switch (activeFeature) {
+    case 'dashboard':
+      return renderMainContent();
+    case 'habit-list':
+      return renderHabitList();
+    case 'rekapitulasi':
+      return renderRekapitulasi();
+    case 'settings':
+      return renderSettings();
+    default:
+      return '';
   }
 }
 
-  // Fungsi konten dengan fitur yang aktif
-  function renderContentByFeature(activeFeature) {
-    switch (activeFeature) {
-      case 'dashboard':
-        return renderMainContent();
-      case 'habit-list':
-        return renderHabitList();
-      case 'rekapitulasi':
-        return renderRekapitulasi();
-      case 'settings':
-        return renderSettings();
-        default:
-          return '';
-    }
-  }
-  
 function renderSidebar(activeFeature) {
   const features = [
     { name: 'Dashboard', icon: 'dashboard', id: 'dashboard' },
@@ -661,9 +661,17 @@ function renderSettings() {
 
 // Fungsi pengaturan tema dan lainnya
 function setting() {
+  console.log("🔧 Menginisialisasi pengaturan...");
+
   const themeSelect = document.getElementById("theme");
   const languageSelect = document.getElementById("language");
   const notificationsCheckbox = document.getElementById("notifications");
+  const settingsForm = document.getElementById("settingsForm");
+
+  if (!themeSelect || !languageSelect || !notificationsCheckbox || !settingsForm) {
+    console.warn("⚠️ Elemen pengaturan tidak ditemukan. Pastikan elemen dengan ID 'theme', 'language', 'notifications', dan 'settingsForm' ada di HTML.");
+    return;
+  }
 
   // Ambil pengaturan dari localStorage jika tersedia
   const savedTheme = localStorage.getItem("theme") || "light";
@@ -675,7 +683,7 @@ function setting() {
   languageSelect.value = savedLanguage;
   notificationsCheckbox.checked = savedNotifications;
 
-  // Terapkan tema gelap terlebih dahulu
+  // Terapkan tema gelap jika tersimpan di localStorage
   applyDarkMode(savedTheme === "dark");
 
   // Fungsi untuk menyimpan pengaturan
@@ -683,39 +691,39 @@ function setting() {
     localStorage.setItem("theme", themeSelect.value);
     localStorage.setItem("language", languageSelect.value);
     localStorage.setItem("notifications", notificationsCheckbox.checked);
+    console.log("✅ Pengaturan telah disimpan.");
   }
 
   // Event listener untuk mengubah tema
   themeSelect.addEventListener("change", function () {
     const isDark = themeSelect.value === "dark";
-    applyDarkMode(isDark);  // Panggil applyDarkMode untuk tema gelap
+    applyDarkMode(isDark);
     saveSettings();
   });
 
   // Event listener untuk mengubah bahasa
   languageSelect.addEventListener("change", function () {
     saveSettings();
-    alert("Bahasa telah diubah ke " + (languageSelect.value === "id" ? "Indonesia" : "English"));
+    console.log("🌍 Bahasa diubah ke: " + (languageSelect.value === "id" ? "Indonesia" : "English"));
   });
 
   // Event listener untuk notifikasi
   notificationsCheckbox.addEventListener("change", function () {
     saveSettings();
-    alert(notificationsCheckbox.checked ? "Notifikasi diaktifkan" : "Notifikasi dinonaktifkan");
+    console.log(notificationsCheckbox.checked ? "🔔 Notifikasi diaktifkan" : "🔕 Notifikasi dinonaktifkan");
   });
 
   // Simpan pengaturan ketika formulir dikirim
   settingsForm.addEventListener("submit", function (event) {
     event.preventDefault(); // Mencegah reload halaman
-    saveSettings(); // Simpan pengaturan
-    alert("Pengaturan telah disimpan!"); // Berikan feedback ke pengguna
+    saveSettings();
+    console.log("🛠 Pengaturan telah disimpan!");
 
     // Pastikan perubahan tema diterapkan
     const isDark = themeSelect.value === "dark";
-    applyDarkMode(isDark);  // Panggil applyDarkMode untuk memastikan tema gelap diterapkan
+    applyDarkMode(isDark);
   });
 }
-
 
 // Fungsi untuk menerapkan tema gelap (dark mode)
 function applyDarkMode(isDark) {
