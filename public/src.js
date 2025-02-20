@@ -548,10 +548,10 @@ finishButton.addEventListener('click', () => {
 }
 
 // Fungsi untuk reset input
-function resetInputs(habitInput, habitTime) {
-  habitInput.value = '';
-  habitTime.value = '';
-}
+//function resetInputs(habitInput, habitTime) {
+ // habitInput.value = '';
+ // habitTime.value = '';
+//}
 
 // Fungsi untuk menampilkan notifikasi
 function displayAlert(message, type) {
