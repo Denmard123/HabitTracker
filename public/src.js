@@ -268,15 +268,12 @@ function saveHabitData(data) {
   localStorage.setItem('habitTrackerData', JSON.stringify(data));
 }
 
-// Fungsi ambil data dari LocalStorage
 function getPendingHabits() {
-  const data = localStorage.getItem("pendingHabits");
-  return data ? JSON.parse(data) : [];
+  return JSON.parse(localStorage.getItem('pendingHabits')) || [];
 }
 
-// Fungsi simpan data ke LocalStorage
 function savePendingHabits(habits) {
-  localStorage.setItem("pendingHabits", JSON.stringify(habits));
+  localStorage.setItem('pendingHabits', JSON.stringify(habits));
 }
 
 
@@ -339,80 +336,107 @@ document.addEventListener("click", (event) => {
   }
 });
 
-  // Fungsi untuk menginisialisasi chart (grafik) di Dashboard
-  function initializeChart() {
-    const ctx = document.getElementById("habitChart").getContext("2d");
-  
-    // Gradient untuk background chart
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, "rgba(54, 162, 235, 0.6)");
-    gradient.addColorStop(1, "rgba(54, 162, 235, 0.1)");
-  
-    new Chart(ctx, {
-      type: "line", // Jenis chart
-      data: {
-        labels: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"], // Label untuk X-axis
-        datasets: [
-          {
-            label: "Kebiasaan Harian", // Judul dataset
-            data: [5, 8, 4, 9, 7, 6, 10], // Data yang akan ditampilkan
-            backgroundColor: gradient, // Warna latar belakang dengan efek gradient
-            borderColor: "rgba(54, 162, 235, 1)", // Warna garis grafik
-            borderWidth: 3, // Lebar garis
-            pointBackgroundColor: "rgba(54, 162, 235, 1)", // Warna titik pada grafik
-            pointBorderColor: "#fff", // Warna border titik
-            pointRadius: 5, // Ukuran titik
-            fill: true, // Mengisi area bawah grafik
-            tension: 0.4, // Menambahkan kelengkungan pada garis grafik
-          },
-        ],
-      },
-      options: {
-        responsive: true, // Responsif agar bisa menyesuaikan layar
-        maintainAspectRatio: false, // Memastikan chart menjaga proporsi ukuran
-        plugins: {
-          legend: {
-            position: "top", // Menampilkan legenda di atas chart
-            labels: {
-              font: {
-                size: 14, // Ukuran font legend
-              },
-            },
-          },
-          tooltip: {
-            callbacks: {
-              label: function (tooltipItem) {
-                return tooltipItem.dataset.label + ": " + tooltipItem.raw + " Kebiasaan"; // Format tooltip
-              },
-            },
-            backgroundColor: "rgba(0, 0, 0, 0.7)", // Warna background tooltip
-            titleColor: "#fff", // Warna judul tooltip
-            bodyColor: "#fff", // Warna isi tooltip
+ // Fungsi untuk menginisialisasi dan update chart
+function initializeChart() {
+  const ctx = document.getElementById("habitChart").getContext("2d");
+
+  // Ambil data dari LocalStorage
+  const data = getHabitData();
+
+  // Buat mapping jumlah kebiasaan selesai dan gagal per hari
+  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const completedCounts = Array(7).fill(0); // Menyimpan jumlah kebiasaan selesai per hari
+  const failedCounts = Array(7).fill(0); // Menyimpan jumlah kebiasaan gagal per hari
+
+  data.forEach((item) => {
+    if (item.tanggal) {
+      const dayIndex = new Date(item.tanggal).getDay(); // Dapatkan index hari (0-6)
+      if (item.status) {
+        completedCounts[dayIndex]++; // Tambahkan jika selesai
+      } else {
+        failedCounts[dayIndex]++; // Tambahkan jika gagal
+      }
+    }
+  });
+
+  // Gradient untuk background chart
+  const gradientCompleted = ctx.createLinearGradient(0, 0, 0, 400);
+  gradientCompleted.addColorStop(0, "rgba(54, 162, 235, 0.6)");
+  gradientCompleted.addColorStop(1, "rgba(54, 162, 235, 0.1)");
+
+  const gradientFailed = ctx.createLinearGradient(0, 0, 0, 400);
+  gradientFailed.addColorStop(0, "rgba(255, 99, 132, 0.6)");
+  gradientFailed.addColorStop(1, "rgba(255, 99, 132, 0.1)");
+
+  new Chart(ctx, {
+    type: "line", // Jenis chart
+    data: {
+      labels: days, // Nama hari dalam seminggu
+      datasets: [
+        {
+          label: "Kebiasaan Selesai",
+          data: completedCounts,
+          backgroundColor: gradientCompleted,
+          borderColor: "rgba(54, 162, 235, 1)",
+          borderWidth: 3,
+          pointBackgroundColor: "rgba(54, 162, 235, 1)",
+          pointBorderColor: "#fff",
+          pointRadius: 5,
+          fill: true,
+          tension: 0.4,
+        },
+        {
+          label: "Kebiasaan Gagal",
+          data: failedCounts,
+          backgroundColor: gradientFailed,
+          borderColor: "rgba(255, 99, 132, 1)",
+          borderWidth: 3,
+          pointBackgroundColor: "rgba(255, 99, 132, 1)",
+          pointBorderColor: "#fff",
+          pointRadius: 5,
+          fill: true,
+          tension: 0.4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            font: { size: 14 },
           },
         },
-        scales: {
-          x: {
-            ticks: {
-              font: {
-                size: 12, // Ukuran font untuk ticks di X-axis
-              },
+        tooltip: {
+          callbacks: {
+            label: function (tooltipItem) {
+              return tooltipItem.dataset.label + ": " + tooltipItem.raw + " Kebiasaan";
             },
           },
-          y: {
-            ticks: {
-              font: {
-                size: 12, // Ukuran font untuk ticks di Y-axis
-              },
-              beginAtZero: true, // Memulai Y-axis dari angka 0
-              callback: function (value) {
-                return value + " Kebiasaan"; // Menambahkan label untuk angka Y-axis
-              },
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          titleColor: "#fff",
+          bodyColor: "#fff",
+        },
+      },
+      scales: {
+        x: {
+          ticks: { font: { size: 12 } },
+        },
+        y: {
+          ticks: {
+            font: { size: 12 },
+            beginAtZero: true,
+            callback: function (value) {
+              return value + " Kebiasaan";
             },
           },
         },
       },
-    });
-  }
+    },
+  });
+}
   
 // Fungsi untuk menginisialisasi tracker kebiasaan
 function initHabitTracker() {
@@ -450,8 +474,10 @@ document.getElementById('add-habit').addEventListener('click', async () => {
   setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
 });
 window.addEventListener('load', () => {
-  const pendingHabits = getPendingHabits();
+  let pendingHabits = getPendingHabits();
   const now = new Date();
+
+  pendingHabits = pendingHabits.filter(({ targetTime }) => targetTime > now.getTime()); // Hapus yang sudah kadaluarsa
 
   pendingHabits.forEach(({ nama, waktu, targetTime }) => {
     const habitItem = createHabitItem(nama, waktu);
@@ -462,7 +488,10 @@ window.addEventListener('load', () => {
       setTimeout(() => handleTimeout(habitItem, nama, waktu), delay);
     }
   });
+
+  savePendingHabits(pendingHabits); // Simpan ulang data pending yang valid
 });
+
 
 }
 
@@ -489,6 +518,11 @@ function handleTimeout(habitItem, habitName, time) {
   const selesaiButton = habitItem.querySelector('.selesai-button');
   const gagalButton = habitItem.querySelector('.gagal-button');
   const finishButton = document.getElementById('finish');
+  habitItem.remove();
+
+  let pendingHabits = getPendingHabits();
+  pendingHabits = pendingHabits.filter(habit => habit.nama !== habitName || habit.waktu !== time);
+  savePendingHabits(pendingHabits);
 
   // Pastikan tombol sudah dalam keadaan terlihat dan dapat diklik
   selesaiButton.classList.remove('hidden');
