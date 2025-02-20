@@ -254,16 +254,32 @@ function renderRekapitulasi() {
   `;
 }
 
-// Fungsi untuk mendapatkan data dari LocalStorage
+// Key untuk penyimpanan utama dan rekapitulasi
+const MAIN_STORAGE_KEY = "habitTrackerData";
+const RECAP_STORAGE_KEY = "habitRecapData";
+
+// Fungsi untuk mendapatkan data kebiasaan dari penyimpanan utama
 function getHabitData() {
-  const data = localStorage.getItem('habitTrackerData');
+  const data = localStorage.getItem(MAIN_STORAGE_KEY);
   return data ? JSON.parse(data) : [];
 }
 
-// Fungsi untuk menyimpan data ke LocalStorage
+// Fungsi untuk menyimpan data kebiasaan ke penyimpanan utama
 function saveHabitData(data) {
-  localStorage.setItem('habitTrackerData', JSON.stringify(data));
+  localStorage.setItem(MAIN_STORAGE_KEY, JSON.stringify(data));
 }
+
+// Fungsi untuk mendapatkan data rekapitulasi
+function getHabitRecapData() {
+  const recapData = localStorage.getItem(RECAP_STORAGE_KEY);
+  return recapData ? JSON.parse(recapData) : [];
+}
+
+// Fungsi untuk menyimpan data rekapitulasi
+function saveHabitRecapData(data) {
+  localStorage.setItem(RECAP_STORAGE_KEY, JSON.stringify(data));
+}
+
 
 // Fungsi untuk mengambil dan merender data di halaman rekapitulasi
 function fetchAndRenderRekapitulasi() {
@@ -278,7 +294,8 @@ function fetchAndRenderRekapitulasi() {
 
   tableBody.innerHTML = ''; // Kosongkan tabel sebelum render
 
-  const data = getHabitData();
+  // Mengambil data dari LocalStorage khusus rekapitulasi
+  const data = getHabitRecapData();
 
   if (!data || data.length === 0) {
     tableBody.innerHTML = `
@@ -303,9 +320,7 @@ function fetchAndRenderRekapitulasi() {
   `).join('');
 }
 
-
-
- // Fungsi untuk menginisialisasi chart menggunakan data dari LocalStorage
+// Fungsi untuk menginisialisasi chart menggunakan data dari LocalStorage
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
 
@@ -314,42 +329,51 @@ function initializeChart() {
   gradient.addColorStop(0, "rgba(54, 162, 235, 0.6)");
   gradient.addColorStop(1, "rgba(54, 162, 235, 0.1)");
 
-  // Ambil data dari LocalStorage
-  const habitData = getHabitData();
+  // Ambil data dari LocalStorage khusus rekapitulasi
+  const habitData = getHabitRecapData();
 
   // Jika tidak ada data, gunakan default
   if (!habitData || habitData.length === 0) {
-    console.warn("⚠️ Tidak ada data di LocalStorage. Menggunakan data default.");
+    console.warn("⚠️ Tidak ada data rekapitulasi. Menggunakan data default.");
   }
 
-  // Hitung jumlah kebiasaan selesai per hari
+  // Hitung jumlah kebiasaan selesai & gagal per hari
   const labels = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
-  const dataPerHari = new Array(7).fill(0);
+  const selesaiPerHari = new Array(7).fill(0);
+  const gagalPerHari = new Array(7).fill(0);
 
   habitData.forEach((habit) => {
-    if (habit.tanggal && habit.status) {
+    if (habit.tanggal) {
       const dayIndex = new Date(habit.tanggal).getDay(); // Ambil index hari (0 = Minggu, 6 = Sabtu)
-      dataPerHari[dayIndex === 0 ? 6 : dayIndex - 1] += 1; // Geser index agar Senin di awal
+      const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // Geser index agar Senin di awal
+
+      if (habit.status) {
+        selesaiPerHari[adjustedIndex] += 1; // Tambah jumlah kebiasaan selesai
+      } else {
+        gagalPerHari[adjustedIndex] += 1; // Tambah jumlah kebiasaan gagal
+      }
     }
   });
 
   // Inisialisasi Chart.js
   new Chart(ctx, {
-    type: "line",
+    type: "bar", // Menggunakan bar chart agar lebih jelas
     data: {
       labels: labels,
       datasets: [
         {
-          label: "Kebiasaan Harian",
-          data: dataPerHari,
-          backgroundColor: gradient,
-          borderColor: "rgba(54, 162, 235, 1)",
-          borderWidth: 3,
-          pointBackgroundColor: "rgba(54, 162, 235, 1)",
-          pointBorderColor: "#fff",
-          pointRadius: 5,
-          fill: true,
-          tension: 0.4,
+          label: "Selesai",
+          data: selesaiPerHari,
+          backgroundColor: "rgba(75, 192, 192, 0.6)",
+          borderColor: "rgba(75, 192, 192, 1)",
+          borderWidth: 2,
+        },
+        {
+          label: "Gagal",
+          data: gagalPerHari,
+          backgroundColor: "rgba(255, 99, 132, 0.6)",
+          borderColor: "rgba(255, 99, 132, 1)",
+          borderWidth: 2,
         },
       ],
     },
@@ -388,202 +412,150 @@ function initializeChart() {
   
 // Fungsi untuk menginisialisasi tracker kebiasaan
 function initHabitTracker() {
-  const habitInput = document.getElementById('habit-input');
-  const habitTime = document.getElementById('habit-time');
-  const habitList = document.getElementById('habit-list');
+  const habitInput = document.getElementById("habit-input");
+  const habitTime = document.getElementById("habit-time");
+  const habitList = document.getElementById("habit-list");
 
-  document.getElementById('add-habit').addEventListener('click', () => {
-  const habitName = habitInput.value.trim();
-  const time = habitTime.value;
+  document.getElementById("add-habit").addEventListener("click", () => {
+    const habitName = habitInput.value.trim();
+    const time = habitTime.value;
 
-  if (!habitName || !time) {
-    displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
-    return;
-  }
+    if (!habitName || !time) {
+      displayAlert("Harap masukkan kegiatan dan waktu.", "error");
+      return;
+    }
 
-  const targetTime = new Date(time);
-  const now = new Date();
+    const targetTime = new Date(time);
+    const now = new Date();
 
-  if (targetTime <= now) {
-    displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
-    return;
-  }
+    if (targetTime <= now) {
+      displayAlert("Waktu sudah terlewat. Pilih waktu yang valid.", "error");
+      return;
+    }
 
-  let habits = getHabitData();
+    let habits = getHabitData();
 
-  // Hindari duplikasi kebiasaan yang sama
-  if (!habits.some(h => h.nama === habitName && h.waktu === time)) {
-    const newHabit = { nama: habitName, waktu: time, status: null };
-    habits.push(newHabit);
-    saveHabitData(habits);
-  }
+    if (!habits.some((h) => h.nama === habitName && h.waktu === time)) {
+      const newHabit = { nama: habitName, waktu: time, status: null };
+      habits.push(newHabit);
+      saveHabitData(habits);
+    }
 
-  const habitItem = createHabitItem(habitName, time);
-  habitList.appendChild(habitItem);
-  resetInputs(habitInput, habitTime);
+    const habitItem = createHabitItem(habitName, time);
+    habitList.appendChild(habitItem);
+    resetInputs(habitInput, habitTime);
 
-  const delay = targetTime - now;
-  setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
-});
+    setTimeout(() => handleTimeout(habitItem, habitName, time), targetTime - now);
+  });
+
+  // Muat data dari LocalStorage
+  loadHabits();
+}
+
+// Fungsi untuk memuat kebiasaan dari penyimpanan
 function loadHabits() {
   const habits = getHabitData();
-  habits.forEach(habit => {
-    const habitItem = createHabitItem(habit.nama, habit.waktu, habit.status);
-    document.getElementById('habit-list').appendChild(habitItem);
+  const habitList = document.getElementById("habit-list");
+
+  habits.forEach((habit) => {
+    const habitItem = createHabitItem(habit.nama, habit.waktu);
+    habitList.appendChild(habitItem);
   });
 }
-loadHabits();
-}
 
-// Fungsi untuk menambah kebiasaan
+// Fungsi untuk membuat elemen kebiasaan
 function createHabitItem(habitName, time) {
-  const li = document.createElement('li');
-  li.className = 'flex items-center justify-between bg-gray-100 px-4 py-3 rounded-lg shadow-md mb-4 transition-all hover:scale-105 hover:bg-gray-200';
+  const li = document.createElement("li");
+  li.className = "flex items-center justify-between bg-gray-100 px-4 py-3 rounded-lg shadow-md mb-4";
 
   li.innerHTML = `
-    <span class="text-gray-700 font-medium text-lg flex-1">${habitName} (Waktu: ${time})</span>
+    <span class="text-gray-700 font-medium">${habitName} (Waktu: ${time})</span>
     <div class="flex items-center space-x-3">
-      <button class="selesai-button bg-green-500 text-white py-1 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 hidden transition-all">Selesai</button>
-      <button class="gagal-button bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 hidden transition-all">Gagal</button>
+      <button class="selesai-button bg-green-500 text-white py-1 px-4 rounded-lg hidden">Selesai</button>
+      <button class="gagal-button bg-red-500 text-white py-1 px-4 rounded-lg hidden">Gagal</button>
     </div>
   `;
 
   return li;
 }
 
-// Fungsi untuk menangani timeout dan mengelola status kebiasaan
+// Fungsi untuk menangani timeout kebiasaan
 function handleTimeout(habitItem, habitName, time) {
-  displayAlert(`Saatnya ${habitName}!`, 'info');
+  displayAlert(`Saatnya ${habitName}!`, "info");
 
-  const selesaiButton = habitItem.querySelector('.selesai-button');
-  const gagalButton = habitItem.querySelector('.gagal-button');
-  const finishButton = document.getElementById('finish');
+  const selesaiButton = habitItem.querySelector(".selesai-button");
+  const gagalButton = habitItem.querySelector(".gagal-button");
+  const finishButton = document.getElementById("finish");
 
-  // Pastikan tombol sudah dalam keadaan terlihat dan dapat diklik
-  selesaiButton.classList.remove('hidden');
-  gagalButton.classList.remove('hidden');
-  finishButton.classList.remove('hidden');
+  selesaiButton.classList.remove("hidden");
+  gagalButton.classList.remove("hidden");
+  finishButton.classList.remove("hidden");
 
-  selesaiButton.classList.add('transition-transform', 'hover:scale-110');
-  gagalButton.classList.add('transition-transform', 'hover:scale-110');
+  selesaiButton.addEventListener("click", () => handleCompletion(habitItem, habitName, time, true), { once: true });
+  gagalButton.addEventListener("click", () => handleCompletion(habitItem, habitName, time, false), { once: true });
+}
 
-  // Menghindari penambahan event listener yang berulang
-  if (!selesaiButton.hasAttribute('data-listener-added')) {
-    selesaiButton.addEventListener(
-      'click',
-      () => {
-        const completedList = document.getElementById('completed-list');
-        if (completedList) {
-          const liCompleted = document.createElement('li');
-          liCompleted.className =
-            'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-green-200';
-          liCompleted.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
-          completedList.appendChild(liCompleted);
-          displayAlert(`${habitName} selesai!`, 'success');
-          habitItem.remove();
-        } else {
-          console.error('Elemen completed-list tidak ditemukan.');
-        }
-      },
-      { once: true }
-    );
-    selesaiButton.setAttribute('data-listener-added', 'true');
-  }
+// Fungsi untuk menangani status kebiasaan (Selesai/Gagal)
+function handleCompletion(habitItem, habitName, time, isCompleted) {
+  const listTarget = isCompleted ? document.getElementById("completed-list") : document.getElementById("failed-list");
+  const statusText = isCompleted ? "Selesai!" : "Gagal!";
+  const bgColor = isCompleted ? "bg-green-100 hover:bg-green-200" : "bg-red-100 hover:bg-red-200";
+  const textColor = isCompleted ? "text-green-600" : "text-red-600";
 
-  // Menambahkan event listener untuk tombol gagal jika belum ada
-  if (!gagalButton.hasAttribute('data-listener-added')) {
-    gagalButton.addEventListener(
-      'click',
-      () => {
-        const failedList = document.getElementById('failed-list');
-        if (failedList) {
-          const liFailed = document.createElement('li');
-          liFailed.className =
-            'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-red-200';
-          liFailed.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
-          failedList.appendChild(liFailed);
-          displayAlert(`${habitName} gagal diselesaikan.`, 'error');
-          habitItem.remove();
-        } else {
-          console.error('Elemen failed-list tidak ditemukan.');
-        }
-      },
-      { once: true }
-    );
-    gagalButton.setAttribute('data-listener-added', 'true');
-  }
+  const li = document.createElement("li");
+  li.className = `flex justify-between items-center ${bgColor} px-4 py-2 rounded-lg shadow-md mb-2`;
+  li.innerHTML = `${habitName} (Waktu: ${time}) <span class="${textColor} font-semibold">${statusText}</span>`;
 
+  listTarget.appendChild(li);
+  habitItem.remove();
+}
 
-// Event listener untuk tombol "Finish"
-finishButton.addEventListener('click', () => {
-  const completedList = document.getElementById('completed-list');
-  const failedList = document.getElementById('failed-list');
+// Fungsi untuk menyimpan data ke rekapan
+document.getElementById("finish").addEventListener("click", () => {
+  const completedList = document.getElementById("completed-list");
+  const failedList = document.getElementById("failed-list");
 
   if (!completedList || !failedList) {
-    console.error("❌ Elemen daftar tidak ditemukan.");
-    displayAlert('❌ Terjadi kesalahan pada elemen daftar!', 'error');
+    displayAlert("❌ Elemen daftar tidak ditemukan.", "error");
     return;
   }
 
   if (completedList.children.length === 0 && failedList.children.length === 0) {
-    displayAlert('❌ Belum ada data yang diselesaikan atau gagal!', 'error');
+    displayAlert("❌ Belum ada data yang diselesaikan atau gagal!", "error");
     return;
   }
 
   const currentTime = new Date().toISOString();
-
   const completedData = Array.from(completedList.children).map(li => ({
-    nama: li.textContent.split('(')[0].trim(),
+    nama: li.textContent.split("(")[0].trim(),
     tanggal: currentTime,
     status: true,
-  })).filter(item => item.nama);
+  }));
 
   const failedData = Array.from(failedList.children).map(li => ({
-    nama: li.textContent.split('(')[0].trim(),
+    nama: li.textContent.split("(")[0].trim(),
     tanggal: currentTime,
     status: false,
-  })).filter(item => item.nama);
+  }));
 
-  if (completedData.length === 0 && failedData.length === 0) {
-    displayAlert('❌ Tidak ada data yang dapat disimpan!', 'error');
-    return;
-  }
+  const existingRecap = getHabitRecapData();
+  const newRecapData = [...existingRecap, ...completedData, ...failedData];
+  saveHabitRecapData(newRecapData);
 
-  // Ambil data lama, tambahkan yang baru, lalu simpan ke LocalStorage
-  const existingData = getHabitData();
-  const newData = [...existingData, ...completedData, ...failedData];
-  saveHabitData(newData);
+  displayAlert("✅ Data berhasil disimpan!", "success");
 
-  console.log("✅ Data berhasil disimpan ke LocalStorage:", newData);
-  displayAlert('✅ Data berhasil disimpan!', 'success');
-
-  // Kosongkan daftar setelah disimpan
-  completedList.innerHTML = '';
-  failedList.innerHTML = '';
+  completedList.innerHTML = "";
+  failedList.innerHTML = "";
 });
 
-}
-
-// Fungsi untuk reset input
-//function resetInputs(habitInput, habitTime) {
- // habitInput.value = '';
- // habitTime.value = '';
-//}
-
-// Fungsi untuk menampilkan notifikasi
 function displayAlert(message, type) {
-  const alertBox = document.createElement('div');
-  alertBox.className = `fixed top-5 right-5 z-50 px-4 py-2 rounded-lg shadow-md transition-all ${
-    type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-  }`;
-  alertBox.textContent = message;
-
-  document.body.appendChild(alertBox);
-
-  setTimeout(() => {
-    alertBox.remove();
-  }, 3000);
+    const alertBox = document.createElement("div");
+    alertBox.className = `fixed top-5 right-5 px-4 py-2 rounded-lg shadow-md ${type === "success" ? "bg-green-500 text-white" : type === "error" ? "bg-red-500 text-white" : "bg-blue-500 text-white"}`;
+    alertBox.textContent = message;
+    document.body.appendChild(alertBox);
+    setTimeout(() => alertBox.remove(), 3000);
 }
+
 
 // Fungsi untuk memparsing waktu
 function parseTime(time) {
