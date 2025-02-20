@@ -268,6 +268,18 @@ function saveHabitData(data) {
   localStorage.setItem('habitTrackerData', JSON.stringify(data));
 }
 
+// Fungsi ambil data dari LocalStorage
+function getPendingHabits() {
+  const data = localStorage.getItem("pendingHabits");
+  return data ? JSON.parse(data) : [];
+}
+
+// Fungsi simpan data ke LocalStorage
+function savePendingHabits(habits) {
+  localStorage.setItem("pendingHabits", JSON.stringify(habits));
+}
+
+
 // Fungsi untuk mengambil dan merender data di halaman rekapitulasi
 function fetchAndRenderRekapitulasi() {
   console.log("🔍 Mengambil data rekapitulasi dari LocalStorage...");
@@ -408,30 +420,50 @@ function initHabitTracker() {
   const habitTime = document.getElementById('habit-time');
   const habitList = document.getElementById('habit-list');
 
-  document.getElementById('add-habit').addEventListener('click', async () => {
-    const habitName = habitInput.value.trim();
-    const time = habitTime.value;
+document.getElementById('add-habit').addEventListener('click', async () => {
+  const habitName = habitInput.value.trim();
+  const time = habitTime.value;
 
-    if (!habitName || !time) {
-      displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
-      return;
-    }
+  if (!habitName || !time) {
+    displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
+    return;
+  }
 
-    const targetTime = parseTime(time);
-    const now = new Date();
+  const targetTime = parseTime(time);
+  const now = new Date();
 
-    if (targetTime <= now) {
-      displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
-      return;
-    }
+  if (targetTime <= now) {
+    displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
+    return;
+  }
 
-    const habitItem = createHabitItem(habitName, time);
+  const habitItem = createHabitItem(habitName, time);
+  habitList.appendChild(habitItem);
+  resetInputs(habitInput, habitTime);
+
+  // Simpan ke LocalStorage supaya gak hilang
+  const pendingHabits = getPendingHabits();
+  pendingHabits.push({ nama: habitName, waktu: time, targetTime: targetTime.getTime() });
+  savePendingHabits(pendingHabits);
+
+  const delay = targetTime - now;
+  setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
+});
+window.addEventListener('load', () => {
+  const pendingHabits = getPendingHabits();
+  const now = new Date();
+
+  pendingHabits.forEach(({ nama, waktu, targetTime }) => {
+    const habitItem = createHabitItem(nama, waktu);
     habitList.appendChild(habitItem);
-    resetInputs(habitInput, habitTime);
 
-    const delay = targetTime - now;
-    setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
+    const delay = targetTime - now.getTime();
+    if (delay > 0) {
+      setTimeout(() => handleTimeout(habitItem, nama, waktu), delay);
+    }
   });
+});
+
 }
 
 // Fungsi untuk menambah kebiasaan
