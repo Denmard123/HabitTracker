@@ -371,11 +371,15 @@ document.addEventListener("click", (event) => {
   }
 });
 
-
+let habitChartInstance = null; // Variabel global untuk menyimpan chart
+  
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
   const data = getHabitData() || [];
-
+  // Hapus chart lama jika sudah ada
+  if (habitChartInstance !== null) {
+    habitChartInstance.destroy();
+  }
   // Kelompokkan data berdasarkan tanggal
   const groupedData = {};
   data.forEach((item) => {
