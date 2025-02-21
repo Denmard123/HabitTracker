@@ -132,7 +132,7 @@ function renderSidebar(activeFeature) {
 // Fungsi untuk Navbar kecil
 function renderNavbarSmall() {
 return `
-  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md">
+  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md z-0">
     <div class="relative">
       <button id="menuBtn" class="btn btn-ghost btn-circle focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300 hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -213,8 +213,9 @@ function initializeNavbarEvents() {
           <!-- Grafik Kebiasaan -->
           <div class="md:col-span-2 bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-2xl font-semibold text-gray-700 text-center mb-6">Grafik Kebiasaan</h2>
-            <div class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl z-0">
+            <div class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl">
             <canvas id="habitChart" class="w-full h-80 md:h-96"></canvas>
+            <div id="recapContainer" class="mt-4"></div>
             </div>
           </div>
           
@@ -373,62 +374,43 @@ document.addEventListener("click", (event) => {
 // Fungsi untuk menginisialisasi dan update chart
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
-
-  // Ambil data dari LocalStorage
   const data = getHabitData() || [];
 
-  // Mapping jumlah kebiasaan selesai dan gagal per hari
-  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const completedCounts = Array(7).fill(0);
-  const failedCounts = Array(7).fill(0);
-
+  // Kelompokkan data berdasarkan tanggal
+  const groupedData = {};
   data.forEach((item) => {
-    if (item.tanggal) {
-      const dayIndex = new Date(item.tanggal).getDay();
-      if (item.status === "selesai") completedCounts[dayIndex]++;
-      else if (item.status === "gagal") failedCounts[dayIndex]++;
+    const dateKey = item.tanggal ? new Date(item.tanggal).toLocaleDateString() : "N/A";
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = { selesai: 0, gagal: 0, details: [] };
     }
+    groupedData[dateKey][item.status]++;
+    groupedData[dateKey].details.push(item);
   });
 
-  // Gradient untuk background chart
-  const gradientCompleted = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientCompleted.addColorStop(0, "rgba(0, 192, 255, 0.8)");
-  gradientCompleted.addColorStop(1, "rgba(0, 192, 255, 0.1)");
+  // Konversi data untuk chart
+  const labels = Object.keys(groupedData);
+  const completedCounts = labels.map(date => groupedData[date].selesai);
+  const failedCounts = labels.map(date => groupedData[date].gagal);
 
-  const gradientFailed = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientFailed.addColorStop(0, "rgba(255, 75, 75, 0.8)");
-  gradientFailed.addColorStop(1, "rgba(255, 75, 75, 0.1)");
-
+  // Buat bar chart
   new Chart(ctx, {
-    type: "line",
+    type: "bar",
     data: {
-      labels: days,
+      labels,
       datasets: [
         {
           label: "Kebiasaan Selesai",
           data: completedCounts,
-          backgroundColor: gradientCompleted,
+          backgroundColor: "rgba(0, 192, 255, 0.8)",
           borderColor: "rgba(0, 192, 255, 1)",
-          borderWidth: 4,
-          pointBackgroundColor: "#00c0ff",
-          pointBorderColor: "#fff",
-          pointRadius: 6,
-          pointHoverRadius: 8,
-          fill: true,
-          tension: 0.4,
+          borderWidth: 1,
         },
         {
           label: "Kebiasaan Gagal",
           data: failedCounts,
-          backgroundColor: gradientFailed,
+          backgroundColor: "rgba(255, 75, 75, 0.8)",
           borderColor: "rgba(255, 75, 75, 1)",
-          borderWidth: 4,
-          pointBackgroundColor: "#ff4b4b",
-          pointBorderColor: "#fff",
-          pointRadius: 6,
-          pointHoverRadius: 8,
-          fill: true,
-          tension: 0.4,
+          borderWidth: 1,
         },
       ],
     },
@@ -436,53 +418,38 @@ function initializeChart() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: {
-          position: "top",
-          labels: {
-            font: { size: 16, weight: "bold" },
-            color: "#333",
-          },
-        },
-        tooltip: {
-          callbacks: {
-            label: function (tooltipItem) {
-              return tooltipItem.dataset.label + ": " + tooltipItem.raw + " Kebiasaan";
-            },
-          },
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          titleColor: "#fff",
-          bodyColor: "#fff",
-          borderWidth: 2,
-          borderColor: "#fff",
-          cornerRadius: 8,
-        },
+        legend: { position: "top" },
       },
       scales: {
-        x: {
-          ticks: {
-            font: { size: 14, weight: "bold" },
-            color: "#666",
-          },
-          grid: { display: false },
-        },
-        y: {
-          ticks: {
-            font: { size: 14 },
-            beginAtZero: true,
-            color: "#666",
-            callback: function (value) {
-              return value + "x";
-            },
-          },
-          grid: {
-            color: "rgba(0,0,0,0.1)",
-            lineWidth: 1,
-          },
-        },
+        x: { grid: { display: false } },
+        y: { beginAtZero: true },
       },
     },
   });
+
+  // Tampilkan rekapan per hari
+  const recapContainer = document.getElementById("recapContainer");
+  recapContainer.innerHTML = labels
+    .map(
+      (date) => `
+        <div class="p-4 border rounded-lg mb-4 shadow">
+          <h3 class="text-lg font-bold mb-2">🗓 ${date}</h3>
+          <ul>
+            ${groupedData[date].details
+              .map(
+                (item) => `
+                  <li class="mb-1 ${item.status === "selesai" ? "text-green-600" : "text-red-600"}">
+                    ${item.status === "selesai" ? "✅" : "❌"} ${item.nama} (${new Date(item.tanggal).toLocaleTimeString()})
+                  </li>`
+              )
+              .join("")}
+          </ul>
+        </div>
+      `
+    )
+    .join("");
 }
+
 
 
 
