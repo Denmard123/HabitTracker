@@ -612,49 +612,58 @@ function handleTimeout(habitItem, habitName, time) {
   }
 
   finishButton.addEventListener('click', () => {
-    try {
-      const completedList = document.getElementById('completed-list');
-      const failedList = document.getElementById('failed-list');
-      const storageKey = "tempHabitData";
+  try {
+    const completedList = document.getElementById('completed-list');
+    const failedList = document.getElementById('failed-list');
+    const storageKey = "tempHabitData"; // Data sementara
 
-      if (!completedList || !failedList) {
-        throw new Error("Elemen daftar tidak ditemukan.");
-      }
+    if (!completedList || !failedList) {
+      throw new Error("Elemen daftar tidak ditemukan.");
+    }
 
-      const tempData = JSON.parse(localStorage.getItem(storageKey)) || [];
-      const extractData = (list, status) => 
-        Array.from(list.children).map(li => ({
+    // Fungsi untuk mengambil dan menyaring data dari daftar selesai/gagal
+    const extractData = (list, status) =>
+      Array.from(list.children)
+        .map(li => ({
           nama: li.textContent.split('(')[0].trim(),
           tanggal: new Date().toISOString(),
           status
-        })).filter(item => item.nama);
+        }))
+        .filter(item => item.nama); // Hindari menyimpan elemen kosong
 
-      const completedData = extractData(completedList, "selesai");
-      const failedData = extractData(failedList, "gagal");
-      const newData = [...completedData, ...failedData];
+    // Ambil data dari daftar selesai dan gagal
+    const completedData = extractData(completedList, "selesai");
+    const failedData = extractData(failedList, "gagal");
+    const newData = [...completedData, ...failedData];
 
-      if (newData.length === 0) {
-        return displayAlert('❌ Tidak ada data baru untuk disimpan!', 'warning');
-      }
-
-      const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
-      if (!userConfirmed) return;
-
-      const existingData = getHabitData();
-      const finalData = [...existingData, ...newData];
-
-      saveHabitData(finalData);
-      displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
-
-      completedList.innerHTML = '';
-      failedList.innerHTML = '';
-      localStorage.removeItem(storageKey);
-
-    } catch (error) {
-      console.error("❌ Terjadi kesalahan:", error.message);
-      displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
+    if (newData.length === 0) {
+      return displayAlert('❌ Tidak ada data baru untuk disimpan!', 'warning');
     }
-  });
+
+    const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
+    if (!userConfirmed) return;
+
+    // Ambil data lama dari localStorage menggunakan `habitTrackerData`
+    const existingData = getHabitData();
+    
+    // Gabungkan data lama dengan data baru
+    const finalData = Array.isArray(existingData) ? [...existingData, ...newData] : newData;
+
+    // Simpan ke localStorage
+    saveHabitData(finalData);
+    displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
+
+    // Bersihkan daftar setelah penyimpanan
+    completedList.innerHTML = '';
+    failedList.innerHTML = '';
+    localStorage.removeItem(storageKey);
+
+  } catch (error) {
+    console.error("❌ Terjadi kesalahan:", error.message);
+    displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
+  }
+});
+
 }
 
 
