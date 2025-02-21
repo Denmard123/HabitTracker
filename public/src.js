@@ -213,7 +213,7 @@ function initializeNavbarEvents() {
           <!-- Grafik Kebiasaan -->
           <div class="md:col-span-2 bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-2xl font-semibold text-gray-700 text-center mb-6">Grafik Kebiasaan</h2>
-            <div class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl">
+            <div id="chartContainer" class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl">
             <canvas id="habitChart" class="w-full h-80 md:h-96"></canvas>
             <div id="recapContainer" class="mt-4"></div>
             </div>
@@ -371,15 +371,11 @@ document.addEventListener("click", (event) => {
   }
 });
 
-let habitChartInstance = null; // Variabel global untuk menyimpan chart
-  
+// Fungsi initializeChart
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
   const data = getHabitData() || [];
-  // Hapus chart lama jika sudah ada
-  if (habitChartInstance !== null) {
-    habitChartInstance.destroy();
-  }
+
   // Kelompokkan data berdasarkan tanggal
   const groupedData = {};
   data.forEach((item) => {
@@ -405,8 +401,16 @@ function initializeChart() {
   gradientRed.addColorStop(0, "rgba(255, 75, 75, 0.9)");
   gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
 
-  // Buat bar chart baru dengan desain keren
-  habitChartInstance = new Chart(ctx, {
+  // Render ulang canvas biar chart selalu fresh
+  document.getElementById("habitChart").remove();
+  const newCanvas = document.createElement("canvas");
+  newCanvas.id = "habitChart";
+  newCanvas.classList.add("w-full", "h-64");
+  document.getElementById("chartContainer").appendChild(newCanvas);
+  const newCtx = newCanvas.getContext("2d");
+
+  // Render chart
+  new Chart(newCtx, {
     type: "bar",
     data: {
       labels,
@@ -417,9 +421,9 @@ function initializeChart() {
           backgroundColor: gradientBlue,
           borderColor: "rgba(0, 192, 255, 1)",
           borderWidth: 1,
-          borderRadius: 8, // Bikin sudut bar lebih halus
-          barThickness: 30, // Atur ketebalan bar
-          hoverBackgroundColor: "rgba(0, 192, 255, 1)", // Efek hover
+          borderRadius: 8,
+          barThickness: 30,
+          hoverBackgroundColor: "rgba(0, 192, 255, 1)",
         },
         {
           label: "Kebiasaan Gagal",
@@ -440,7 +444,7 @@ function initializeChart() {
         legend: {
           position: "top",
           labels: {
-            color: "#333", // Warna teks legend
+            color: "#333",
             font: { size: 14, weight: "bold" },
           },
         },
@@ -453,13 +457,13 @@ function initializeChart() {
         y: {
           beginAtZero: true,
           ticks: { color: "#666", font: { size: 12 } },
-          grid: { color: "rgba(200, 200, 200, 0.2)" }, // Grid halus
+          grid: { color: "rgba(200, 200, 200, 0.2)" },
         },
       },
     },
   });
 
-  // Tampilkan rekapan per hari
+  // Render recap container
   const recapContainer = document.getElementById("recapContainer");
   if (!recapContainer) {
     console.error("Element #recapContainer tidak ditemukan!");
@@ -486,6 +490,7 @@ function initializeChart() {
     )
     .join("");
 }
+
 
 
 
