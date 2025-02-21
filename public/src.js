@@ -132,14 +132,14 @@ function renderSidebar(activeFeature) {
 // Fungsi untuk Navbar kecil
 function renderNavbarSmall() {
 return `
-  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md z-0">
+  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md">
     <div class="relative">
       <button id="menuBtn" class="btn btn-ghost btn-circle focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300 hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
         </svg>
       </button>
-      <ul id="menuDropdown" class="hidden absolute left-0 mt-3 w-56 bg-gray-800 text-white rounded-lg shadow-2xl opacity-0 transform scale-95 transition-all duration-300">
+      <ul id="menuDropdown" class="hidden absolute left-0 mt-3 w-56 bg-gray-800 text-white rounded-lg shadow-2xl opacity-0 transform scale-95 transition-all duration-300 z-50">
         <li><button data-feature="dashboard" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>🏠</span> Dashboard</button></li>
         <li><button data-feature="habit-list" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📋</span> Daftar Kebiasaan</button></li>
         <li><button data-feature="rekapitulasi" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📊</span> Rekapitulasi</button></li>
@@ -371,7 +371,7 @@ document.addEventListener("click", (event) => {
   }
 });
 
-// Fungsi untuk menginisialisasi dan update chart
+
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
   const data = getHabitData() || [];
@@ -392,8 +392,17 @@ function initializeChart() {
   const completedCounts = labels.map(date => groupedData[date].selesai);
   const failedCounts = labels.map(date => groupedData[date].gagal);
 
-  // Buat bar chart
-  new Chart(ctx, {
+  // Buat gradient color
+  const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+  gradientBlue.addColorStop(0, "rgba(0, 192, 255, 0.9)");
+  gradientBlue.addColorStop(1, "rgba(0, 192, 255, 0.5)");
+
+  const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
+  gradientRed.addColorStop(0, "rgba(255, 75, 75, 0.9)");
+  gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
+
+  // Buat bar chart baru dengan desain keren
+  habitChartInstance = new Chart(ctx, {
     type: "bar",
     data: {
       labels,
@@ -401,16 +410,22 @@ function initializeChart() {
         {
           label: "Kebiasaan Selesai",
           data: completedCounts,
-          backgroundColor: "rgba(0, 192, 255, 0.8)",
+          backgroundColor: gradientBlue,
           borderColor: "rgba(0, 192, 255, 1)",
           borderWidth: 1,
+          borderRadius: 8, // Bikin sudut bar lebih halus
+          barThickness: 30, // Atur ketebalan bar
+          hoverBackgroundColor: "rgba(0, 192, 255, 1)", // Efek hover
         },
         {
           label: "Kebiasaan Gagal",
           data: failedCounts,
-          backgroundColor: "rgba(255, 75, 75, 0.8)",
+          backgroundColor: gradientRed,
           borderColor: "rgba(255, 75, 75, 1)",
           borderWidth: 1,
+          borderRadius: 8,
+          barThickness: 30,
+          hoverBackgroundColor: "rgba(255, 75, 75, 1)",
         },
       ],
     },
@@ -418,17 +433,35 @@ function initializeChart() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: "top" },
+        legend: {
+          position: "top",
+          labels: {
+            color: "#333", // Warna teks legend
+            font: { size: 14, weight: "bold" },
+          },
+        },
       },
       scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true },
+        x: {
+          grid: { display: false },
+          ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#666", font: { size: 12 } },
+          grid: { color: "rgba(200, 200, 200, 0.2)" }, // Grid halus
+        },
       },
     },
   });
 
   // Tampilkan rekapan per hari
   const recapContainer = document.getElementById("recapContainer");
+  if (!recapContainer) {
+    console.error("Element #recapContainer tidak ditemukan!");
+    return;
+  }
+
   recapContainer.innerHTML = labels
     .map(
       (date) => `
@@ -449,6 +482,7 @@ function initializeChart() {
     )
     .join("");
 }
+
 
 
 
