@@ -106,9 +106,9 @@ function renderSidebar(activeFeature) {
       <div class="p-4 bg-gray-800 text-white text-center mt-auto">
         <p class="text-sm">&copy; 2025 Habit Tracker. All Rights Reserved.</p>
         <div class="flex justify-center space-x-4 mt-2">
-          <a href="#" class="text-white hover:text-blue-400">Facebook</a>
-          <a href="#" class="text-white hover:text-blue-400">Twitter</a>
-          <a href="#" class="text-white hover:text-blue-400">Instagram</a>
+          <a href="https://web.facebook.com/acil.gionino/?_rdc=1&_rdr#" class="text-white hover:text-blue-400">Facebook</a>
+          <a href="https://trakteer.id/den_mardiyana" class="text-white hover:text-blue-400">For Coffe</a>
+          <a href="https://www.instagram.com/denmardiyana312/" class="text-white hover:text-blue-400">Instagram</a>
         </div>
       </div>
     </div>
@@ -145,6 +145,7 @@ function renderNavbarSmall() {
           <li class="hover:bg-gray-700"><button data-feature="habit-list" class="w-full text-left py-2">Daftar Kebiasaan</button></li>
           <li class="hover:bg-gray-700"><button data-feature="rekapitulasi" class="w-full text-left py-2">Rekapitulasi</button></li>
           <li class="hover:bg-gray-700"><button data-feature="settings" class="w-full text-left py-2">Pengaturan</button></li>
+          <li class="hover:bg-gray-700"><a href="https://trakteer.id/den_mardiyana" class="text-white hover:text-blue-400">For Coffe</a></li>
         </ul>
       </div>
     </div>
@@ -330,12 +331,12 @@ document.addEventListener("click", (event) => {
   }
 });
 
- // Fungsi untuk menginisialisasi dan update chart
+// Fungsi untuk menginisialisasi dan update chart
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
 
   // Ambil data dari LocalStorage
-  const data = getHabitData();
+  const data = getHabitData() || []; // Pastikan data tidak null
 
   // Buat mapping jumlah kebiasaan selesai dan gagal per hari
   const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -345,9 +346,10 @@ function initializeChart() {
   data.forEach((item) => {
     if (item.tanggal) {
       const dayIndex = new Date(item.tanggal).getDay(); // Dapatkan index hari (0-6)
-      if (item.status) {
+
+      if (item.status === "selesai") {
         completedCounts[dayIndex]++; // Tambahkan jika selesai
-      } else {
+      } else if (item.status === "gagal") {
         failedCounts[dayIndex]++; // Tambahkan jika gagal
       }
     }
@@ -363,9 +365,9 @@ function initializeChart() {
   gradientFailed.addColorStop(1, "rgba(255, 99, 132, 0.1)");
 
   new Chart(ctx, {
-    type: "line", // Jenis chart
+    type: "line",
     data: {
-      labels: days, // Nama hari dalam seminggu
+      labels: days,
       datasets: [
         {
           label: "Kebiasaan Selesai",
@@ -431,6 +433,7 @@ function initializeChart() {
     },
   });
 }
+
 
 function saveTemporaryData(type, habitName) {
   const storageKey = "tempHabitData";
