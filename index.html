@@ -5,14 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Habit Tracker</title>
-  <link rel="icon" type="image/png" href="/public/l.jpg"> 
+  <link rel="icon" type="image/png" href="./public/l.jpg"> 
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
 <body class="min-h-screen bg-cover bg-center flex items-center justify-center" 
-      style="background-image: url('/public/bg.webp');">
+      style="background-image: url('./public/bg.webp');">
 
   <!-- Main container -->
   <div class="text-center bg-blue-900 bg-opacity-75 rounded-xl shadow-lg p-8 max-w-lg mx-auto">
@@ -30,29 +30,45 @@
 Mulai
 </button>
   </div>
-  <div id="iklan-placeholder" class="hidden"></div>
+ <!-- Navbar -->
+<nav id="iklan-navbar" class="w-full bg-blue-900 text-white p-4 text-center fixed top-0 left-0">
+    <span>Iklan Monetag</span>
+</nav>
+
 <script>
 document.getElementById("mulai").addEventListener("click", function () {
-    // Cek apakah iklan sudah dimuat sebelumnya
-    if (!document.getElementById("monetag-script")) {
-        let script = document.createElement("script");
-        script.src = "https://kulroakonsu.net/88/tag.min.js";
-        script.setAttribute("data-zone", "1288");
-        script.setAttribute("async", "true");
-        script.setAttribute("data-cfasync", "false");
-        script.id = "monetag-script";
-
-        // Masukkan iklan ke dalam placeholder
-        document.getElementById("iklan-placeholder").appendChild(script);
-        document.getElementById("iklan-placeholder").classList.remove("hidden");
-
-        console.log("Iklan Monetag dimuat setelah interaksi pengguna.");
+    // Hapus navbar iklan saat tombol "Mulai" diklik
+    let iklanNavbar = document.getElementById("iklan-navbar");
+    if (iklanNavbar) {
+        iklanNavbar.remove();
+        console.log("Navbar iklan Monetag dihapus setelah interaksi pengguna.");
     }
+
+    // Hapus skrip iklan agar tidak mengganggu aplikasi
+    let monetagScript = document.getElementById("monetag-script");
+    if (monetagScript) {
+        monetagScript.remove();
+        console.log("Script iklan Monetag dihapus setelah interaksi pengguna.");
+    }
+});
+
+// Tambahkan script iklan ke dalam navbar
+window.addEventListener("load", function () {
+    let script = document.createElement("script");
+    script.src = "https://kulroakonsu.net/88/tag.min.js";
+    script.setAttribute("data-zone", "1288");
+    script.setAttribute("async", "true");
+    script.setAttribute("data-cfasync", "false");
+    script.id = "monetag-script";
+
+    // Masukkan iklan ke dalam navbar
+    document.getElementById("iklan-navbar").appendChild(script);
 });
 </script>
 
+
   <!-- External JS file -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.min.js"></script>
+<!--   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.min.js"></script> -->
   <script type="module" src="./public/src.js"></script>
 
   <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="1288" async data-cfasync="false"></script>
