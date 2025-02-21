@@ -453,7 +453,6 @@ function saveTemporaryData(type, habitName) {
   // Hindari duplikasi
   if (existingData.some(item => item.nama === habitName)) {
     console.warn("⚠️ Habit sudah ada di daftar sementara.");
-    displayAlert(`⚠️ Habit "${habitName}" sudah ada di daftar sementara!`, "warning");
     return;
   }
 
