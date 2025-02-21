@@ -131,7 +131,7 @@ function renderSidebar(activeFeature) {
 // Fungsi untuk Navbar kecil
 function renderNavbarSmall() {
   return `
-    <div class="sm:hidden bg-gray-800 text-white p-4">
+    <div class="sm:hidden bg-gray-800 text-white p-4 flex justify-between items-center">
       <div class="dropdown relative">
         <button tabindex="0" class="btn btn-ghost btn-circle">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,12 +145,17 @@ function renderNavbarSmall() {
           <li class="hover:bg-gray-700"><button data-feature="habit-list" class="w-full text-left py-2">Daftar Kebiasaan</button></li>
           <li class="hover:bg-gray-700"><button data-feature="rekapitulasi" class="w-full text-left py-2">Rekapitulasi</button></li>
           <li class="hover:bg-gray-700"><button data-feature="settings" class="w-full text-left py-2">Pengaturan</button></li>
-          <li class="hover:bg-gray-700"><a href="https://trakteer.id/den_mardiyana" class="text-white hover:text-blue-400">For Coffe</a></li>
         </ul>
       </div>
+      <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18 8h1a2 2 0 1 1 0 4h-1V8ZM3 4h15a3 3 0 0 1 3 3v5a5 5 0 0 1-5 5h-2v2a2 2 0 1 1-4 0v-2H5a2 2 0 1 1-2-2V6a2 2 0 0 1 2-2Zm15 10a3 3 0 0 0 3-3V7a1 1 0 0 0-1-1h-1v8Zm-2-8H5v9a.98.98 0 0 0 .28.7.99.99 0 0 0 .72.3h9a3 3 0 0 0 3-3V6ZM5 16h10H5Z"></path>
+        </svg>
+      </a>
     </div>
   `;
 }
+
 
 // Event binding untuk navigasi
 setTimeout(() => {
