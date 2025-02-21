@@ -213,8 +213,8 @@ function initializeNavbarEvents() {
           <!-- Grafik Kebiasaan -->
           <div class="md:col-span-2 bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-2xl font-semibold text-gray-700 text-center mb-6">Grafik Kebiasaan</h2>
-            <div class="relative w-full h-80">
-              <canvas id="habitChart" class="block w-full h-full"></canvas>
+            <div class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl z-0">
+            <canvas id="habitChart" class="w-full h-80 md:h-96"></canvas>
             </div>
           </div>
           
