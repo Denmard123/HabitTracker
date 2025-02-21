@@ -131,45 +131,29 @@ function renderSidebar(activeFeature) {
 
 // Fungsi untuk Navbar kecil
 function renderNavbarSmall() {
- return `
-  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-lg">
+return `
+  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md">
     <div class="relative">
       <button id="menuBtn" class="btn btn-ghost btn-circle focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300 hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
         </svg>
       </button>
-      <ul id="menuDropdown" class="hidden absolute left-0 mt-3 w-56 bg-gray-800 text-white rounded-lg shadow-xl opacity-0 transform scale-95 transition-all duration-300">
-        <li><button data-feature="dashboard" class="dropdown-item">🏠 Dashboard</button></li>
-        <li><button data-feature="habit-list" class="dropdown-item">📋 Daftar Kebiasaan</button></li>
-        <li><button data-feature="rekapitulasi" class="dropdown-item">📊 Rekapitulasi</button></li>
-        <li><button data-feature="settings" class="dropdown-item">⚙️ Pengaturan</button></li>
+      <ul id="menuDropdown" class="hidden absolute left-0 mt-3 w-56 bg-gray-800 text-white rounded-lg shadow-2xl opacity-0 transform scale-95 transition-all duration-300">
+        <li><button data-feature="dashboard" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>🏠</span> Dashboard</button></li>
+        <li><button data-feature="habit-list" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📋</span> Daftar Kebiasaan</button></li>
+        <li><button data-feature="rekapitulasi" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📊</span> Rekapitulasi</button></li>
+        <li><button data-feature="settings" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>⚙️</span> Pengaturan</button></li>
       </ul>
     </div>
-    <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+    <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle hover:scale-110 transition-transform">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-yellow-400 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
         <path d="M18 8h1a2 2 0 1 1 0 4h-1V8ZM3 4h15a3 3 0 0 1 3 3v5a5 5 0 0 1-5 5h-2v2a2 2 0 1 1-4 0v-2H5a2 2 0 1 1-2-2V6a2 2 0 0 1 2-2Zm15 10a3 3 0 0 0 3-3V7a1 1 0 0 0-1-1h-1v8Zm-2-8H5v9a.98.98 0 0 0 .28.7.99.99 0 0 0 .72.3h9a3 3 0 0 0 3-3V6ZM5 16h10H5Z"></path>
       </svg>
     </a>
   </div>
-
-  <style>
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      padding: 12px 16px;
-      text-align: left;
-      transition: background 0.3s ease, transform 0.2s ease;
-      border-radius: 8px;
-    }
-
-    .dropdown-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: scale(1.05);
-    }
-  </style>
 `;
+
 }
 
 // Fungsi untuk menambahkan event listener ke elemen navbar
