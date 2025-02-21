@@ -156,26 +156,35 @@ return `
 
 }
 
-// Fungsi untuk menambahkan event listener ke elemen navbar
 function initializeNavbarEvents() {
   const menuBtn = document.getElementById("menuBtn");
   const menuDropdown = document.getElementById("menuDropdown");
 
-  if (!menuBtn || !menuDropdown) return; // Hindari error jika elemen belum ada
+  if (!menuBtn || !menuDropdown) return; // Cegah error jika elemen belum ada
 
   // Toggle menu saat tombol ditekan
-  menuBtn.addEventListener("click", () => {
+  menuBtn.addEventListener("click", (event) => {
+    event.stopPropagation(); // Hindari trigger event click pada document
+
     const isHidden = menuDropdown.classList.contains("hidden");
-    menuDropdown.classList.toggle("hidden", !isHidden);
-    menuDropdown.classList.toggle("opacity-0", !isHidden);
-    menuDropdown.classList.toggle("scale-95", !isHidden);
-    menuDropdown.classList.toggle("opacity-100", isHidden);
-    menuDropdown.classList.toggle("scale-100", isHidden);
+
+    if (isHidden) {
+      menuDropdown.classList.remove("hidden");
+      setTimeout(() => {
+        menuDropdown.classList.remove("opacity-0", "scale-95");
+        menuDropdown.classList.add("opacity-100", "scale-100");
+      }, 10);
+    } else {
+      menuDropdown.classList.remove("opacity-100", "scale-100");
+      menuDropdown.classList.add("opacity-0", "scale-95");
+      setTimeout(() => menuDropdown.classList.add("hidden"), 300);
+    }
   });
 
   // Menutup menu jika klik di luar area dropdown
   document.addEventListener("click", (event) => {
     if (!menuBtn.contains(event.target) && !menuDropdown.contains(event.target)) {
+      menuDropdown.classList.remove("opacity-100", "scale-100");
       menuDropdown.classList.add("opacity-0", "scale-95");
       setTimeout(() => menuDropdown.classList.add("hidden"), 300);
     }
@@ -188,11 +197,13 @@ function initializeNavbarEvents() {
       renderHabitTracker(featureId);
 
       // Tutup dropdown setelah klik
+      menuDropdown.classList.remove("opacity-100", "scale-100");
       menuDropdown.classList.add("opacity-0", "scale-95");
       setTimeout(() => menuDropdown.classList.add("hidden"), 300);
     });
   });
 }
+
 
   // Fungsi untuk Dashboard
   function renderMainContent() {
@@ -364,33 +375,29 @@ function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
 
   // Ambil data dari LocalStorage
-  const data = getHabitData() || []; // Pastikan data tidak null
+  const data = getHabitData() || [];
 
-  // Buat mapping jumlah kebiasaan selesai dan gagal per hari
+  // Mapping jumlah kebiasaan selesai dan gagal per hari
   const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const completedCounts = Array(7).fill(0); // Menyimpan jumlah kebiasaan selesai per hari
-  const failedCounts = Array(7).fill(0); // Menyimpan jumlah kebiasaan gagal per hari
+  const completedCounts = Array(7).fill(0);
+  const failedCounts = Array(7).fill(0);
 
   data.forEach((item) => {
     if (item.tanggal) {
-      const dayIndex = new Date(item.tanggal).getDay(); // Dapatkan index hari (0-6)
-
-      if (item.status === "selesai") {
-        completedCounts[dayIndex]++; // Tambahkan jika selesai
-      } else if (item.status === "gagal") {
-        failedCounts[dayIndex]++; // Tambahkan jika gagal
-      }
+      const dayIndex = new Date(item.tanggal).getDay();
+      if (item.status === "selesai") completedCounts[dayIndex]++;
+      else if (item.status === "gagal") failedCounts[dayIndex]++;
     }
   });
 
   // Gradient untuk background chart
   const gradientCompleted = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientCompleted.addColorStop(0, "rgba(54, 162, 235, 0.6)");
-  gradientCompleted.addColorStop(1, "rgba(54, 162, 235, 0.1)");
+  gradientCompleted.addColorStop(0, "rgba(0, 192, 255, 0.8)");
+  gradientCompleted.addColorStop(1, "rgba(0, 192, 255, 0.1)");
 
   const gradientFailed = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientFailed.addColorStop(0, "rgba(255, 99, 132, 0.6)");
-  gradientFailed.addColorStop(1, "rgba(255, 99, 132, 0.1)");
+  gradientFailed.addColorStop(0, "rgba(255, 75, 75, 0.8)");
+  gradientFailed.addColorStop(1, "rgba(255, 75, 75, 0.1)");
 
   new Chart(ctx, {
     type: "line",
@@ -401,11 +408,12 @@ function initializeChart() {
           label: "Kebiasaan Selesai",
           data: completedCounts,
           backgroundColor: gradientCompleted,
-          borderColor: "rgba(54, 162, 235, 1)",
-          borderWidth: 3,
-          pointBackgroundColor: "rgba(54, 162, 235, 1)",
+          borderColor: "rgba(0, 192, 255, 1)",
+          borderWidth: 4,
+          pointBackgroundColor: "#00c0ff",
           pointBorderColor: "#fff",
-          pointRadius: 5,
+          pointRadius: 6,
+          pointHoverRadius: 8,
           fill: true,
           tension: 0.4,
         },
@@ -413,11 +421,12 @@ function initializeChart() {
           label: "Kebiasaan Gagal",
           data: failedCounts,
           backgroundColor: gradientFailed,
-          borderColor: "rgba(255, 99, 132, 1)",
-          borderWidth: 3,
-          pointBackgroundColor: "rgba(255, 99, 132, 1)",
+          borderColor: "rgba(255, 75, 75, 1)",
+          borderWidth: 4,
+          pointBackgroundColor: "#ff4b4b",
           pointBorderColor: "#fff",
-          pointRadius: 5,
+          pointRadius: 6,
+          pointHoverRadius: 8,
           fill: true,
           tension: 0.4,
         },
@@ -430,7 +439,8 @@ function initializeChart() {
         legend: {
           position: "top",
           labels: {
-            font: { size: 14 },
+            font: { size: 16, weight: "bold" },
+            color: "#333",
           },
         },
         tooltip: {
@@ -439,28 +449,41 @@ function initializeChart() {
               return tooltipItem.dataset.label + ": " + tooltipItem.raw + " Kebiasaan";
             },
           },
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
           titleColor: "#fff",
           bodyColor: "#fff",
+          borderWidth: 2,
+          borderColor: "#fff",
+          cornerRadius: 8,
         },
       },
       scales: {
         x: {
-          ticks: { font: { size: 12 } },
+          ticks: {
+            font: { size: 14, weight: "bold" },
+            color: "#666",
+          },
+          grid: { display: false },
         },
         y: {
           ticks: {
-            font: { size: 12 },
+            font: { size: 14 },
             beginAtZero: true,
+            color: "#666",
             callback: function (value) {
-              return value + " Kebiasaan";
+              return value + "x";
             },
+          },
+          grid: {
+            color: "rgba(0,0,0,0.1)",
+            lineWidth: 1,
           },
         },
       },
     },
   });
 }
+
 
 
 function saveTemporaryData(type, habitName) {
