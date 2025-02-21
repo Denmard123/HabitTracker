@@ -30,6 +30,26 @@
 Mulai
 </button>
   </div>
+  <div id="iklan-placeholder" class="hidden"></div>
+<script>
+document.getElementById("mulai").addEventListener("click", function () {
+    // Cek apakah iklan sudah dimuat sebelumnya
+    if (!document.getElementById("monetag-script")) {
+        let script = document.createElement("script");
+        script.src = "https://kulroakonsu.net/88/tag.min.js";
+        script.setAttribute("data-zone", "1288");
+        script.setAttribute("async", "true");
+        script.setAttribute("data-cfasync", "false");
+        script.id = "monetag-script";
+
+        // Masukkan iklan ke dalam placeholder
+        document.getElementById("iklan-placeholder").appendChild(script);
+        document.getElementById("iklan-placeholder").classList.remove("hidden");
+
+        console.log("Iklan Monetag dimuat setelah interaksi pengguna.");
+    }
+});
+</script>
 
   <!-- External JS file -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.min.js"></script>
