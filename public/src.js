@@ -298,14 +298,15 @@ function fetchAndRenderRekapitulasi() {
 
   console.log("✅ Data rekapitulasi dari LocalStorage:", data);
 
-  tableBody.innerHTML = data.map((item, index) => `
-    <tr>
-      <td class="border px-4 py-2">${index + 1}</td>
-      <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
-      <td class="border px-4 py-2">${item.status ? 'Selesai' : 'Gagal'}</td>
-      <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
-    </tr>
-  `).join('');
+tableBody.innerHTML = data.map((item, index) => `
+  <tr>
+    <td class="border px-4 py-2">${index + 1}</td>
+    <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
+    <td class="border px-4 py-2">${item.status === 'selesai' ? 'Selesai' : 'Gagal'}</td>
+    <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
+  </tr>
+`).join('');
+
 }
 
 // Fungsi untuk menghapus data rekapitulasi dari LocalStorage
