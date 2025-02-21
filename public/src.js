@@ -40,6 +40,7 @@ function renderHabitTracker(activeFeature = 'dashboard') {
       </div>
     </div>
   `;
+   initializeNavbarEvents();
    // Setelah elemen dirender, terapkan pengaturan
    if (activeFeature === 'settings') {
     setting();  // Memanggil setting() di sini untuk memastikan pengaturan diterapkan
@@ -138,13 +139,11 @@ function renderNavbarSmall() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
           </svg>
         </button>
-        <ul 
-          id="menuDropdown"
-          class="hidden absolute left-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl opacity-0 transform scale-95 transition-all duration-300">
-          <li><button data-feature="dashboard" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Dashboard</button></li>
-          <li><button data-feature="habit-list" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Daftar Kebiasaan</button></li>
-          <li><button data-feature="rekapitulasi" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Rekapitulasi</button></li>
-          <li><button data-feature="settings" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Pengaturan</button></li>
+        <ul id="menuDropdown" class="hidden absolute left-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl opacity-0 transform scale-95 transition-all duration-300">
+          <li><button data-feature="dashboard" class="dropdown-item">Dashboard</button></li>
+          <li><button data-feature="habit-list" class="dropdown-item">Daftar Kebiasaan</button></li>
+          <li><button data-feature="rekapitulasi" class="dropdown-item">Rekapitulasi</button></li>
+          <li><button data-feature="settings" class="dropdown-item">Pengaturan</button></li>
         </ul>
       </div>
       <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle">
@@ -156,20 +155,21 @@ function renderNavbarSmall() {
   `;
 }
 
-// Event binding setelah elemen ditambahkan ke DOM
-setTimeout(() => {
+// Fungsi untuk menambahkan event listener ke elemen navbar
+function initializeNavbarEvents() {
   const menuBtn = document.getElementById("menuBtn");
   const menuDropdown = document.getElementById("menuDropdown");
 
+  if (!menuBtn || !menuDropdown) return; // Hindari error jika elemen belum ada
+
   // Toggle menu saat tombol ditekan
   menuBtn.addEventListener("click", () => {
-    if (menuDropdown.classList.contains("hidden")) {
-      menuDropdown.classList.remove("hidden", "opacity-0", "scale-95");
-      menuDropdown.classList.add("opacity-100", "scale-100");
-    } else {
-      menuDropdown.classList.add("opacity-0", "scale-95");
-      setTimeout(() => menuDropdown.classList.add("hidden"), 300); // Delay sebelum menyembunyikan menu
-    }
+    const isHidden = menuDropdown.classList.contains("hidden");
+    menuDropdown.classList.toggle("hidden", !isHidden);
+    menuDropdown.classList.toggle("opacity-0", !isHidden);
+    menuDropdown.classList.toggle("scale-95", !isHidden);
+    menuDropdown.classList.toggle("opacity-100", isHidden);
+    menuDropdown.classList.toggle("scale-100", isHidden);
   });
 
   // Menutup menu jika klik di luar area dropdown
@@ -181,7 +181,7 @@ setTimeout(() => {
   });
 
   // Event klik pada dropdown item
-  document.querySelectorAll('#menuDropdown button').forEach((item) => {
+  document.querySelectorAll('.dropdown-item').forEach((item) => {
     item.addEventListener("click", (e) => {
       const featureId = e.currentTarget.getAttribute("data-feature");
       renderHabitTracker(featureId);
@@ -191,8 +191,7 @@ setTimeout(() => {
       setTimeout(() => menuDropdown.classList.add("hidden"), 300);
     });
   });
-}, 0);
-
+}
 
   // Fungsi untuk Dashboard
   function renderMainContent() {
