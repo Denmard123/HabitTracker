@@ -131,20 +131,20 @@ function renderSidebar(activeFeature) {
 // Fungsi untuk Navbar kecil
 function renderNavbarSmall() {
   return `
-    <div class="sm:hidden bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div class="dropdown relative">
-        <button tabindex="0" class="btn btn-ghost btn-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="sm:hidden bg-gray-900 text-white p-4 flex justify-between items-center shadow-lg">
+      <div class="relative">
+        <button id="menuBtn" class="btn btn-ghost btn-circle focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
           </svg>
         </button>
         <ul 
-          tabindex="0" 
-          class="menu menu-compact dropdown-content absolute mt-2 z-50 w-52 bg-gray-800 p-2 rounded-box shadow-lg">
-          <li class="hover:bg-gray-700"><button data-feature="dashboard" class="w-full text-left py-2">Dashboard</button></li>
-          <li class="hover:bg-gray-700"><button data-feature="habit-list" class="w-full text-left py-2">Daftar Kebiasaan</button></li>
-          <li class="hover:bg-gray-700"><button data-feature="rekapitulasi" class="w-full text-left py-2">Rekapitulasi</button></li>
-          <li class="hover:bg-gray-700"><button data-feature="settings" class="w-full text-left py-2">Pengaturan</button></li>
+          id="menuDropdown"
+          class="hidden absolute left-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl opacity-0 transform scale-95 transition-all duration-300">
+          <li><button data-feature="dashboard" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Dashboard</button></li>
+          <li><button data-feature="habit-list" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Daftar Kebiasaan</button></li>
+          <li><button data-feature="rekapitulasi" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Rekapitulasi</button></li>
+          <li><button data-feature="settings" class="block w-full text-left px-4 py-2 hover:bg-gray-700">Pengaturan</button></li>
         </ul>
       </div>
       <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle">
@@ -156,20 +156,43 @@ function renderNavbarSmall() {
   `;
 }
 
-
-// Event binding untuk navigasi
+// Event binding setelah elemen ditambahkan ke DOM
 setTimeout(() => {
-  document.querySelectorAll('.dropdown-content button').forEach((item) => {
-    item.addEventListener('click', (e) => {
-      const featureId = e.currentTarget.getAttribute('data-feature');
+  const menuBtn = document.getElementById("menuBtn");
+  const menuDropdown = document.getElementById("menuDropdown");
+
+  // Toggle menu saat tombol ditekan
+  menuBtn.addEventListener("click", () => {
+    if (menuDropdown.classList.contains("hidden")) {
+      menuDropdown.classList.remove("hidden", "opacity-0", "scale-95");
+      menuDropdown.classList.add("opacity-100", "scale-100");
+    } else {
+      menuDropdown.classList.add("opacity-0", "scale-95");
+      setTimeout(() => menuDropdown.classList.add("hidden"), 300); // Delay sebelum menyembunyikan menu
+    }
+  });
+
+  // Menutup menu jika klik di luar area dropdown
+  document.addEventListener("click", (event) => {
+    if (!menuBtn.contains(event.target) && !menuDropdown.contains(event.target)) {
+      menuDropdown.classList.add("opacity-0", "scale-95");
+      setTimeout(() => menuDropdown.classList.add("hidden"), 300);
+    }
+  });
+
+  // Event klik pada dropdown item
+  document.querySelectorAll('#menuDropdown button').forEach((item) => {
+    item.addEventListener("click", (e) => {
+      const featureId = e.currentTarget.getAttribute("data-feature");
       renderHabitTracker(featureId);
 
-      // Menutup dropdown setelah klik
-      const dropdown = document.querySelector('.dropdown-content');
-      if (dropdown) dropdown.classList.add('hidden');
+      // Tutup dropdown setelah klik
+      menuDropdown.classList.add("opacity-0", "scale-95");
+      setTimeout(() => menuDropdown.classList.add("hidden"), 300);
     });
   });
 }, 0);
+
 
   // Fungsi untuk Dashboard
   function renderMainContent() {
