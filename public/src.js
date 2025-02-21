@@ -128,56 +128,23 @@ function renderSidebar(activeFeature) {
   return sidebar;
 }  
 
-// Fungsi untuk Navbar kecil dengan animasi & event delegation
+// Fungsi untuk Navbar kecil
 function renderNavbarSmall() {
-  setTimeout(() => {
-    const dropdown = document.querySelector('.dropdown-content');
-    const dropdownButton = document.querySelector('.btn-ghost');
-
-    // Event listener untuk membuka/menutup dropdown dengan animasi
-    if (dropdownButton) {
-      dropdownButton.addEventListener('click', (e) => {
-        e.stopPropagation(); // Cegah event bubbling agar tidak langsung tertutup
-        dropdown.classList.toggle('hidden');
-        dropdown.classList.toggle('scale-95'); // Animasi kecil saat muncul
-        dropdown.classList.toggle('opacity-0'); // Fade-in
-      });
-    }
-
-    // Event listener menggunakan event delegation
-    dropdown.addEventListener('click', (e) => {
-      if (e.target.tagName === 'BUTTON') {
-        const featureId = e.target.getAttribute('data-feature');
-        renderHabitTracker(featureId);
-
-        // Tutup dropdown setelah klik dengan delay kecil untuk UX lebih smooth
-        setTimeout(() => {
-          dropdown.classList.add('hidden', 'opacity-0', 'scale-95');
-        }, 200);
-      }
-    });
-
-    // Menutup dropdown jika klik di luar
-    document.addEventListener('click', (e) => {
-      if (!dropdown.contains(e.target) && !dropdownButton.contains(e.target)) {
-        dropdown.classList.add('hidden', 'opacity-0', 'scale-95');
-      }
-    });
-  }, 0);
-
   return `
     <div class="sm:hidden bg-gray-800 text-white p-4 flex justify-between items-center">
       <div class="dropdown relative">
-        <button class="btn btn-ghost btn-circle">
+        <button tabindex="0" class="btn btn-ghost btn-circle">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
           </svg>
         </button>
-        <ul class="menu menu-compact dropdown-content absolute mt-2 z-50 w-52 bg-gray-800 p-2 rounded-box shadow-lg hidden opacity-0 scale-95 transition-all duration-200 ease-in-out">
-          <li><button data-feature="dashboard" class="w-full text-left py-2">Dashboard</button></li>
-          <li><button data-feature="habit-list" class="w-full text-left py-2">Daftar Kebiasaan</button></li>
-          <li><button data-feature="rekapitulasi" class="w-full text-left py-2">Rekapitulasi</button></li>
-          <li><button data-feature="settings" class="w-full text-left py-2">Pengaturan</button></li>
+        <ul 
+          tabindex="0" 
+          class="menu menu-compact dropdown-content absolute mt-2 z-50 w-52 bg-gray-800 p-2 rounded-box shadow-lg">
+          <li class="hover:bg-gray-700"><button data-feature="dashboard" class="w-full text-left py-2">Dashboard</button></li>
+          <li class="hover:bg-gray-700"><button data-feature="habit-list" class="w-full text-left py-2">Daftar Kebiasaan</button></li>
+          <li class="hover:bg-gray-700"><button data-feature="rekapitulasi" class="w-full text-left py-2">Rekapitulasi</button></li>
+          <li class="hover:bg-gray-700"><button data-feature="settings" class="w-full text-left py-2">Pengaturan</button></li>
         </ul>
       </div>
       <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle">
@@ -190,6 +157,19 @@ function renderNavbarSmall() {
 }
 
 
+// Event binding untuk navigasi
+setTimeout(() => {
+  document.querySelectorAll('.dropdown-content button').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      const featureId = e.currentTarget.getAttribute('data-feature');
+      renderHabitTracker(featureId);
+
+      // Menutup dropdown setelah klik
+      const dropdown = document.querySelector('.dropdown-content');
+      if (dropdown) dropdown.classList.add('hidden');
+    });
+  });
+}, 0);
 
   // Fungsi untuk Dashboard
   function renderMainContent() {
