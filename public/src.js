@@ -402,11 +402,13 @@ function initializeChart() {
   gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
 
   // Render ulang canvas biar chart selalu fresh
-  document.getElementById("habitChart").remove();
+  const oldCanvas = document.getElementById("habitChart");
+  if (oldCanvas) oldCanvas.remove();
   const newCanvas = document.createElement("canvas");
   newCanvas.id = "habitChart";
   newCanvas.classList.add("w-full", "h-64");
   document.getElementById("chartContainer").appendChild(newCanvas);
+
   const newCtx = newCanvas.getContext("2d");
 
   // Render chart
@@ -422,7 +424,7 @@ function initializeChart() {
           borderColor: "rgba(0, 192, 255, 1)",
           borderWidth: 1,
           borderRadius: 8,
-          barThickness: 30,
+          barThickness: flex,
           hoverBackgroundColor: "rgba(0, 192, 255, 1)",
         },
         {
@@ -432,32 +434,35 @@ function initializeChart() {
           borderColor: "rgba(255, 75, 75, 1)",
           borderWidth: 1,
           borderRadius: 8,
-          barThickness: 30,
+          barThickness: flex,
           hoverBackgroundColor: "rgba(255, 75, 75, 1)",
         },
       ],
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "top",
-          labels: {
-            color: "#333",
-            font: { size: 14, weight: "bold" },
-          },
-        },
+   options: {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: "top",
+      labels: {
+        color: "#333",
+        font: { size: 14, weight: "bold" },
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: "#666", font: { size: 12 } },
-          grid: { color: "rgba(200, 200, 200, 0.2)" },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
+      barPercentage: 0.5,
+      categoryPercentage: 0.7,
+    },
+    y: {
+      beginAtZero: true,
+      ticks: { color: "#666", font: { size: 12 } },
+      grid: { color: "rgba(200, 200, 200, 0.2)" },
+          },
         },
       },
     },
