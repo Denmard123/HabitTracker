@@ -371,6 +371,7 @@ document.addEventListener("click", (event) => {
   }
 });
 
+
 // Fungsi initializeChart
 function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
@@ -424,7 +425,7 @@ function initializeChart() {
           borderColor: "rgba(0, 192, 255, 1)",
           borderWidth: 1,
           borderRadius: 8,
-          barThickness: flex,
+          barThickness: "flex", // Fix: flex harus sebagai string
           hoverBackgroundColor: "rgba(0, 192, 255, 1)",
         },
         {
@@ -434,37 +435,37 @@ function initializeChart() {
           borderColor: "rgba(255, 75, 75, 1)",
           borderWidth: 1,
           borderRadius: 8,
-          barThickness: flex,
+          barThickness: "flex", // Fix: flex harus sebagai string
           hoverBackgroundColor: "rgba(255, 75, 75, 1)",
         },
       ],
     },
-   options: {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: "top",
-      labels: {
-        color: "#333",
-        font: { size: 14, weight: "bold" },
-      },
-    },
-  },
-  scales: {
-    x: {
-      grid: { display: false },
-      ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
-      barPercentage: 0.5,
-      categoryPercentage: 0.7,
-    },
-    y: {
-      beginAtZero: true,
-      ticks: { color: "#666", font: { size: 12 } },
-      grid: { color: "rgba(200, 200, 200, 0.2)" },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            color: "#333",
+            font: { size: 14, weight: "bold" },
           },
         },
       },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
+          barPercentage: 0.5,
+          categoryPercentage: 0.7,
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#666", font: { size: 12 } },
+          grid: { color: "rgba(200, 200, 200, 0.2)" },
+        },
+      },
+    },
   });
 
   // Render recap container
@@ -494,6 +495,7 @@ function initializeChart() {
     )
     .join("");
 }
+
 
 
 
