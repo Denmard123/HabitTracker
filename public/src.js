@@ -390,8 +390,8 @@ function initializeChart() {
 
   // Konversi data untuk chart
   const labels = Object.keys(groupedData);
-  const completedCounts = labels.map(date => groupedData[date].selesai);
-  const failedCounts = labels.map(date => groupedData[date].gagal);
+  const completedCounts = labels.map((date) => groupedData[date].selesai);
+  const failedCounts = labels.map((date) => groupedData[date].gagal);
 
   // Buat gradient color
   const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
@@ -402,14 +402,12 @@ function initializeChart() {
   gradientRed.addColorStop(0, "rgba(255, 75, 75, 0.9)");
   gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
 
-  // Render ulang canvas biar chart selalu fresh
-  const oldCanvas = document.getElementById("habitChart");
-  if (oldCanvas) oldCanvas.remove();
+  // Hapus canvas lama untuk mencegah duplikasi
+  document.getElementById("habitChart").remove();
   const newCanvas = document.createElement("canvas");
   newCanvas.id = "habitChart";
   newCanvas.classList.add("w-full", "h-64");
   document.getElementById("chartContainer").appendChild(newCanvas);
-
   const newCtx = newCanvas.getContext("2d");
 
   // Render chart
@@ -424,8 +422,7 @@ function initializeChart() {
           backgroundColor: gradientBlue,
           borderColor: "rgba(0, 192, 255, 1)",
           borderWidth: 1,
-          borderRadius: 8,
-          barThickness: "flex", // Fix: flex harus sebagai string
+          borderRadius: 6,
           hoverBackgroundColor: "rgba(0, 192, 255, 1)",
         },
         {
@@ -434,8 +431,7 @@ function initializeChart() {
           backgroundColor: gradientRed,
           borderColor: "rgba(255, 75, 75, 1)",
           borderWidth: 1,
-          borderRadius: 8,
-          barThickness: "flex", // Fix: flex harus sebagai string
+          borderRadius: 6,
           hoverBackgroundColor: "rgba(255, 75, 75, 1)",
         },
       ],
@@ -456,8 +452,8 @@ function initializeChart() {
         x: {
           grid: { display: false },
           ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
-          barPercentage: 0.5,
-          categoryPercentage: 0.7,
+          barPercentage: 0.6,
+          categoryPercentage: 0.8,
         },
         y: {
           beginAtZero: true,
@@ -495,8 +491,6 @@ function initializeChart() {
     )
     .join("");
 }
-
-
 
 
 
