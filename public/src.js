@@ -393,15 +393,6 @@ function initializeChart() {
   const completedCounts = labels.map((date) => groupedData[date].selesai);
   const failedCounts = labels.map((date) => groupedData[date].gagal);
 
-  // Buat gradient color
-  const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientBlue.addColorStop(0, "rgba(0, 192, 255, 0.9)");
-  gradientBlue.addColorStop(1, "rgba(0, 192, 255, 0.5)");
-
-  const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientRed.addColorStop(0, "rgba(255, 75, 75, 0.9)");
-  gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
-
   // Hapus canvas lama untuk mencegah duplikasi
   document.getElementById("habitChart").remove();
   const newCanvas = document.createElement("canvas");
@@ -410,29 +401,27 @@ function initializeChart() {
   document.getElementById("chartContainer").appendChild(newCanvas);
   const newCtx = newCanvas.getContext("2d");
 
-  // Render chart
+  // Render chart sebagai garis
   new Chart(newCtx, {
-    type: "bar",
+    type: "line",
     data: {
       labels,
       datasets: [
         {
           label: "Kebiasaan Selesai",
           data: completedCounts,
-          backgroundColor: gradientBlue,
           borderColor: "rgba(0, 192, 255, 1)",
-          borderWidth: 1,
-          borderRadius: 6,
-          hoverBackgroundColor: "rgba(0, 192, 255, 1)",
+          backgroundColor: "rgba(0, 192, 255, 0.2)",
+          fill: true,
+          tension: 0.3,
         },
         {
           label: "Kebiasaan Gagal",
           data: failedCounts,
-          backgroundColor: gradientRed,
           borderColor: "rgba(255, 75, 75, 1)",
-          borderWidth: 1,
-          borderRadius: 6,
-          hoverBackgroundColor: "rgba(255, 75, 75, 1)",
+          backgroundColor: "rgba(255, 75, 75, 0.2)",
+          fill: true,
+          tension: 0.3,
         },
       ],
     },
@@ -452,8 +441,6 @@ function initializeChart() {
         x: {
           grid: { display: false },
           ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
-          barPercentage: 0.6,
-          categoryPercentage: 0.8,
         },
         y: {
           beginAtZero: true,
@@ -491,9 +478,6 @@ function initializeChart() {
     )
     .join("");
 }
-
-
-
 
 
 function saveTemporaryData(type, habitName) {
