@@ -215,7 +215,6 @@ function initializeNavbarEvents() {
             <h2 class="text-2xl font-semibold text-gray-700 text-center mb-6">Grafik Kebiasaan</h2>
             <div id="chartContainer" class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl">
             <canvas id="habitChart" class="w-full h-80 md:h-96"></canvas>
-            <div id="recapContainer" class="mt-4"></div>
             </div>
           </div>
           
@@ -377,60 +376,34 @@ function initializeChart() {
   const ctx = document.getElementById("habitChart").getContext("2d");
   const data = getHabitData() || [];
 
-  // Kelompokkan data berdasarkan tanggal
-  const groupedData = {};
+  // Hitung jumlah selesai dan gagal
+  let selesaiCount = 0;
+  let gagalCount = 0;
+
   data.forEach((item) => {
-    const dateKey = item.tanggal ? new Date(item.tanggal).toLocaleDateString() : "N/A";
-    if (!groupedData[dateKey]) {
-      groupedData[dateKey] = { selesai: 0, gagal: 0 };
-    }
-    groupedData[dateKey][item.status]++;
+    if (item.status === "selesai") selesaiCount++;
+    if (item.status === "gagal") gagalCount++;
   });
 
-  // Konversi data untuk chart
-  const labels = Object.keys(groupedData);
-  const completedCounts = labels.map((date) => groupedData[date].selesai);
-  const failedCounts = labels.map((date) => groupedData[date].gagal);
+  // Hapus canvas lama agar tidak duplikat
+  document.getElementById("habitChart").remove();
+  const newCanvas = document.createElement("canvas");
+  newCanvas.id = "habitChart";
+  newCanvas.classList.add("w-full", "h-80", "md:h-96");
+  document.getElementById("chartContainer").appendChild(newCanvas);
+  const newCtx = newCanvas.getContext("2d");
 
-  // Buat gradient untuk garis
-  const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientBlue.addColorStop(0, "rgba(0, 192, 255, 0.9)");
-  gradientBlue.addColorStop(1, "rgba(0, 192, 255, 0.5)");
-
-  const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
-  gradientRed.addColorStop(0, "rgba(255, 75, 75, 0.9)");
-  gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
-
-  // Hapus grafik lama tanpa menghapus canvas
-  if (window.habitChartInstance) {
-    window.habitChartInstance.destroy();
-  }
-
-  // Render chart sebagai garis
-  window.habitChartInstance = new Chart(ctx, {
-    type: "line",
+  // Buat Doughnut Chart
+  new Chart(newCtx, {
+    type: "doughnut",
     data: {
-      labels,
+      labels: ["Kebiasaan Selesai", "Kebiasaan Gagal"],
       datasets: [
         {
-          label: "Kebiasaan Selesai",
-          data: completedCounts,
-          borderColor: "rgba(0, 192, 255, 1)",
-          backgroundColor: gradientBlue,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: "rgba(0, 192, 255, 1)",
-        },
-        {
-          label: "Kebiasaan Gagal",
-          data: failedCounts,
-          borderColor: "rgba(255, 75, 75, 1)",
-          backgroundColor: gradientRed,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: "rgba(255, 75, 75, 1)",
+          data: [selesaiCount, gagalCount],
+          backgroundColor: ["rgba(0, 192, 255, 0.8)", "rgba(255, 75, 75, 0.8)"],
+          borderColor: ["rgba(0, 192, 255, 1)", "rgba(255, 75, 75, 1)"],
+          borderWidth: 2,
         },
       ],
     },
@@ -446,20 +419,10 @@ function initializeChart() {
           },
         },
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: "#666", font: { size: 12 } },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: "#666", font: { size: 12 } },
-          grid: { color: "rgba(200, 200, 200, 0.2)" },
-        },
-      },
     },
   });
 }
+
 
 
 function saveTemporaryData(type, habitName) {
