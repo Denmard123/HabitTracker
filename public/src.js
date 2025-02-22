@@ -465,7 +465,6 @@ function initializeChart() {
           },
         },
       },
-    },
   });
 
   // Render recap container
