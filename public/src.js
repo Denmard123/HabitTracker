@@ -382,10 +382,9 @@ function initializeChart() {
   data.forEach((item) => {
     const dateKey = item.tanggal ? new Date(item.tanggal).toLocaleDateString() : "N/A";
     if (!groupedData[dateKey]) {
-      groupedData[dateKey] = { selesai: 0, gagal: 0, details: [] };
+      groupedData[dateKey] = { selesai: 0, gagal: 0 };
     }
     groupedData[dateKey][item.status]++;
-    groupedData[dateKey].details.push(item);
   });
 
   // Konversi data untuk chart
@@ -393,16 +392,22 @@ function initializeChart() {
   const completedCounts = labels.map((date) => groupedData[date].selesai);
   const failedCounts = labels.map((date) => groupedData[date].gagal);
 
-  // Hapus canvas lama untuk mencegah duplikasi
-  document.getElementById("habitChart").remove();
-  const newCanvas = document.createElement("canvas");
-  newCanvas.id = "habitChart";
-  newCanvas.classList.add("w-full", "h-64");
-  document.getElementById("chartContainer").appendChild(newCanvas);
-  const newCtx = newCanvas.getContext("2d");
+  // Buat gradient untuk garis
+  const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+  gradientBlue.addColorStop(0, "rgba(0, 192, 255, 0.9)");
+  gradientBlue.addColorStop(1, "rgba(0, 192, 255, 0.5)");
+
+  const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
+  gradientRed.addColorStop(0, "rgba(255, 75, 75, 0.9)");
+  gradientRed.addColorStop(1, "rgba(255, 75, 75, 0.5)");
+
+  // Hapus grafik lama tanpa menghapus canvas
+  if (window.habitChartInstance) {
+    window.habitChartInstance.destroy();
+  }
 
   // Render chart sebagai garis
-  new Chart(newCtx, {
+  window.habitChartInstance = new Chart(ctx, {
     type: "line",
     data: {
       labels,
@@ -411,17 +416,21 @@ function initializeChart() {
           label: "Kebiasaan Selesai",
           data: completedCounts,
           borderColor: "rgba(0, 192, 255, 1)",
-          backgroundColor: "rgba(0, 192, 255, 0.2)",
+          backgroundColor: gradientBlue,
           fill: true,
           tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: "rgba(0, 192, 255, 1)",
         },
         {
           label: "Kebiasaan Gagal",
           data: failedCounts,
           borderColor: "rgba(255, 75, 75, 1)",
-          backgroundColor: "rgba(255, 75, 75, 0.2)",
+          backgroundColor: gradientRed,
           fill: true,
           tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: "rgba(255, 75, 75, 1)",
         },
       ],
     },
@@ -440,7 +449,7 @@ function initializeChart() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { autoSkip: true, maxTicksLimit: 5, color: "#666", font: { size: 12 } },
+          ticks: { color: "#666", font: { size: 12 } },
         },
         y: {
           beginAtZero: true,
@@ -450,33 +459,6 @@ function initializeChart() {
       },
     },
   });
-
-  // Render recap container
-  const recapContainer = document.getElementById("recapContainer");
-  if (!recapContainer) {
-    console.error("Element #recapContainer tidak ditemukan!");
-    return;
-  }
-
-  recapContainer.innerHTML = labels
-    .map(
-      (date) => `
-        <div class="p-4 border rounded-lg mb-4 shadow">
-          <h3 class="text-lg font-bold mb-2">🗓 ${date}</h3>
-          <ul>
-            ${groupedData[date].details
-              .map(
-                (item) => `
-                  <li class="mb-1 ${item.status === "selesai" ? "text-green-600" : "text-red-600"}">
-                    ${item.status === "selesai" ? "✅" : "❌"} ${item.nama} (${new Date(item.tanggal).toLocaleTimeString()})
-                  </li>`
-              )
-              .join("")}
-          </ul>
-        </div>
-      `
-    )
-    .join("");
 }
 
 
