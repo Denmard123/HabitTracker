@@ -210,13 +210,15 @@ function initializeNavbarEvents() {
     return `
       <div class="flex-1 overflow-y-auto p-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Grafik Kebiasaan -->
-          <div class="md:col-span-2 bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-2xl font-semibold text-gray-700 text-center mb-6">Grafik Kebiasaan</h2>
-            <div id="chartContainer" class="relative p-4 md:p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl">
-            <canvas id="habitChart" class="w-full h-80 md:h-96"></canvas>
-            </div>
+         <!-- Grafik Kebiasaan -->
+          <div class="md:col-span-2 bg-gradient-to-br from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-3xl">
+          <h2 class="text-3xl font-bold text-gray-800 dark:text-white text-center mb-8">Grafik Kebiasaan</h2>
+  
+          <div id="chartContainer" class="relative p-6 md:p-8 bg-white dark:bg-gray-900 shadow-xl rounded-2xl flex justify-center items-center">
+          <canvas id="habitChart" class="w-full h-72 md:h-96"></canvas>
           </div>
+          </div>
+
           
           <!-- Waktu Saat Ini -->
           <div class="bg-gradient-to-br from-blue-500 to-indigo-700 shadow-xl rounded-lg p-6 text-white">
