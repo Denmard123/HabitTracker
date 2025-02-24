@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="fitur Habit Tracker, fitur pelacak kebiasaan, cara menggunakan Habit Tracker">
+    <meta name="robots" content="noindex, follow">
+    <meta name="author" content="Den Mardiyana">
+    <meta name="publisher" content="Habit Tracker">
+  
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Fitur Habit Tracker - Apa yang Bisa Kamu Lakukan?">
+    <meta property="og:description" content="Jelajahi fitur-fitur utama Habit Tracker yang membantumu melacak kebiasaan dan meningkatkan produktivitas!">
+    <meta property="og:image" content="https://raw.githubusercontent.com/denmard123/HabitTracker/main/public/tag.png">
+    <meta property="og:url" content="https://denmard123.github.io/HabitTracker/feature.html">
+    <meta property="og:type" content="article">
+  
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fitur Habit Tracker - Apa yang Bisa Kamu Lakukan?">
+    <meta name="twitter:description" content="Jelajahi fitur-fitur utama Habit Tracker yang membantumu melacak kebiasaan dan meningkatkan produktivitas!">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/denmard123/HabitTracker/main/public/tag.png">
+  
+    <title>Fitur Habit Tracker - Apa yang Bisa Kamu Lakukan?</title>
+    <meta name="description" content="Cari tahu fitur-fitur unggulan Habit Tracker yang dapat membantu kamu membangun kebiasaan baik dan meningkatkan produktivitas.">
+    <link rel="icon" type="image/png" href="./public/l.jpg">
+    <link rel="canonical" href="https://denmard123.github.io/HabitTracker/feature.html">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <style>
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+          animation: fadeIn 1s ease-in-out;
+        }
+
+        .glassmorphism {
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(10px);
+          border-radius: 12px;
+          padding: 2rem;
+          text-align: center;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    
+    <!-- Breadcrumb Schema -->
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Features of Habit Tracker",
+          "url": "https://denmard123.github.io/HabitTracker/feature.html",
+          "description": "Jelajahi fitur terbaik Habit Tracker untuk membantu kamu membangun kebiasaan yang lebih baik.",
+          "breadcrumb": {
+            "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://denmard123.github.io/HabitTracker/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "About",
+        "item": "https://denmard123.github.io/HabitTracker/about.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Feature",
+        "item": "https://denmard123.github.io/HabitTracker/feature.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Testimoni",
+        "item": "https://denmard123.github.io/HabitTracker/testimoni.html"
+      }
+    ]
+          }
+        }
+        </script>
+
+        <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "Apa itu Habit Tracker?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Habit Tracker adalah aplikasi yang membantu kamu membangun kebiasaan positif sehari-hari dengan cara yang mudah dan efektif."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Apakah Habit Tracker gratis?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Ya! Habit Tracker 100% gratis dan bisa digunakan oleh siapa saja tanpa perlu registrasi."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Bagaimana cara menggunakan Habit Tracker?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Kamu hanya perlu memilih kebiasaan yang ingin dilacak dan menandainya setiap hari saat sudah dilakukan."
+                  }
+                }
+              ]
+            }
+            </script>
+        
+</head>
+
+
+<body class="bg-cover bg-center bg-fixed min-h-screen flex flex-col justify-between text-gray-200" style="background-image: url('./public/bg.webp');">
+
+<!-- Navbar -->
+<nav class="flex items-center justify-between px-6 py-4 bg-indigo-600/80 backdrop-blur-md text-white fixed w-full top-0 z-50 shadow-lg">
+    <div class="flex items-center space-x-3">
+      <img src="./public/l.jpg" alt="Logo Habit Tracker" class="h-10 w-10 rounded-full shadow-md">
+      <span class="font-semibold text-xl">Habit Tracker</span>
+    </div>
+  
+    <!-- Menu untuk Desktop -->
+    <div id="menu" class="hidden lg:flex space-x-8 font-medium">
+      <a href="index.html" class="hover:text-indigo-300 transition-all duration-300">Home</a>
+      <a href="about.html" class="hover:text-indigo-300 transition-all duration-300">About</a>
+      <a href="feature.html" class="hover:text-indigo-300 transition-all duration-300">Feature</a>
+      <a href="testimoni.html" class="hover:text-indigo-300 transition-all duration-300">Testimoni</a>
+    </div>
+  
+    <!-- Tombol Hamburger untuk Mobile -->
+    <div class="lg:hidden flex items-center">
+      <button id="hamburgerButton" class="text-white focus:outline-none transition-transform duration-300 ease-in-out">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+  </nav>
+  
+<!-- Dropdown Menu untuk Mobile -->
+<div id="mobileMenu" class="fixed top-16 left-0 w-full bg-indigo-600 text-white flex flex-col items-center space-y-4 py-6 shadow-md transform hidden translate-y-[-100%] transition-all duration-500 ease-in-out z-50">
+    <a href="index.html" class="hover:text-indigo-300 transition-all duration-300">Home</a>
+    <a href="about.html" class="hover:text-indigo-300 transition-all duration-300">About</a>
+    <a href="feature.html" class="hover:text-indigo-300 transition-all duration-300">Feature</a>
+    <a href="testimoni.html" class="hover:text-indigo-300 transition-all duration-300">Testimoni</a>
+  </div>
+  
+
+<!-- Main Section -->
+<section class="flex flex-col justify-center items-center min-h-screen text-center p-6 pt-24">
+    <div class="glassmorphism w-full max-w-4xl animate-fade-in p-8">
+      <h2 class="text-4xl font-extrabold text-black mb-10 flex items-center justify-center gap-3">
+        <span class="material-icons-outlined text-yellow-400 text-5xl">star</span>
+        Fitur-Fitur Unggulan
+      </h2>
+  
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+          <span class="material-icons-outlined text-indigo-500 text-5xl">track_changes</span>
+          <h3 class="text-xl font-semibold text-black mt-3">Pelacakan Kebiasaan</h3>
+          <p class="mt-2 text-gray-600 text-center">Tandai kebiasaan yang berhasil atau gagal setiap hari dan lihat progresnya.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+          <span class="material-icons-outlined text-green-500 text-5xl">bar_chart</span>
+          <h3 class="text-xl font-semibold text-black mt-3">Statistik & Grafik</h3>
+          <p class="mt-2 text-gray-600 text-center">Lihat data perkembangan kebiasaan dalam bentuk grafik visual.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+          <span class="material-icons-outlined text-red-500 text-5xl">notifications_active</span>
+          <h3 class="text-xl font-semibold text-black mt-3">Pengingat Otomatis</h3>
+          <p class="mt-2 text-gray-600 text-center">Dapatkan notifikasi atau email untuk mengingatkan kebiasaan yang harus dilakukan.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+          <span class="material-icons-outlined text-blue-500 text-5xl">flag</span>
+          <h3 class="text-xl font-semibold text-black mt-3">Personalisasi Target</h3>
+          <p class="mt-2 text-gray-600 text-center">Atur target harian, mingguan, atau bulanan sesuai kebutuhan.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+          <span class="material-icons-outlined text-orange-500 text-5xl">devices</span>
+          <h3 class="text-xl font-semibold text-black mt-3">Akses di Berbagai Perangkat</h3>
+          <p class="mt-2 text-gray-600 text-center">Gunakan Habit Tracker di desktop, tablet, atau ponsel dengan tampilan responsif.</p>
+        </div>
+  
+      </div>
+    </div>
+  </section>
+  
+  
+
+ <!-- Footer -->
+<footer class="bg-gray-900 text-white py-6 mt-12 relative shadow-lg">
+    <div class="container mx-auto flex flex-col items-center space-y-4">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <img src="./public/l.jpg" alt="Habit Tracker Logo" class="h-10 w-10 rounded-full shadow-md">
+        <h2 class="text-lg font-semibold tracking-wide">Habit Tracker</h2>
+      </div>
+  
+      <p class="text-sm text-gray-400">&copy; 2025 Habit Tracker. All Rights Reserved.</p>
+  
+      <!-- Links -->
+      <div class="flex space-x-6">
+        <a href="https://www.termsfeed.com/live/85012894-8be9-471e-8a75-9ca26834dd71" 
+           class="text-gray-300 hover:text-blue-400 transition duration-300 text-sm">
+          Privacy Policy
+        </a>
+        <a href="https://www.termsfeed.com/live/d7d682d1-875b-4e86-9cb7-dff9620f990f" 
+           class="text-gray-300 hover:text-blue-400 transition duration-300 text-sm">
+          Terms of Service
+        </a>
+      </div>
+  
+      <!-- Social Media -->
+      <div class="flex space-x-5 mt-2">
+        <a href="https://www.instagram.com/denmardiyana312/" 
+           class="hover:text-pink-400 transition duration-300">
+          <i class="fab fa-instagram fa-xl"></i>
+        </a>
+        <a href="https://web.facebook.com/acil.gionino/?_rdc=1&_rdr#" 
+           class="hover:text-blue-400 transition duration-300">
+          <i class="fab fa-facebook fa-xl"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+  
+
+<!-- Script untuk Animasi Hamburger Menu -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const hamburgerButton = document.getElementById("hamburgerButton");
+      const mobileMenu = document.getElementById("mobileMenu");
+  
+      if (hamburgerButton && mobileMenu) {
+        hamburgerButton.addEventListener("click", function () {
+          mobileMenu.classList.toggle("hidden");
+          mobileMenu.classList.toggle("translate-y-0");
+        });
+  
+        // Klik di luar menu untuk menutupnya
+        document.addEventListener("click", function (event) {
+          if (!mobileMenu.contains(event.target) && !hamburgerButton.contains(event.target)) {
+            mobileMenu.classList.add("hidden");
+            mobileMenu.classList.remove("translate-y-0");
+          }
+        });
+      } else {
+        console.error("Elemen hamburgerButton atau mobileMenu tidak ditemukan.");
+      }
+    });
+  </script>
+</body>
+
+</html>
