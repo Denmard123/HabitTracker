@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Halaman Utama -->
   <url>
     <loc>https://denmard123.github.io/HabitTracker/</loc>
     <lastmod>2025-02-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- Halaman About -->
+  <url>
+    <loc>https://denmard123.github.io/HabitTracker/about.html</loc>
+    <lastmod>2025-02-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Halaman Feature -->
+  <url>
+    <loc>https://denmard123.github.io/HabitTracker/feature.html</loc>
+    <lastmod>2025-02-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Halaman Testimoni -->
+  <url>
+    <loc>https://denmard123.github.io/HabitTracker/testimoni.html</loc>
+    <lastmod>2025-02-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
