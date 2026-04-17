@@ -108,7 +108,7 @@ function renderSidebar(activeFeature) {
         <p class="text-sm">&copy; 2025 Habit Tracker. All Rights Reserved.</p>
         <div class="flex justify-center space-x-4 mt-2">
           <a href="https://web.facebook.com/acil.gionino/?_rdc=1&_rdr#" class="text-white hover:text-blue-400">Facebook</a>
-          <a href="https://trakteer.id/den_mardiyana" class="text-white hover:text-blue-400">For Coffe</a>
+          <a href="https://saweria.co/Denmardiyana" class="text-white hover:text-blue-400">For Coffe</a>
           <a href="https://www.instagram.com/denmardiyana312/" class="text-white hover:text-blue-400">Instagram</a>
         </div>
       </div>
