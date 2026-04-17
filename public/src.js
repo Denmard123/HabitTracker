@@ -1,33 +1,184 @@
-// Inisialisasi Supabase Client dengan cara yang benar
-// const { createClient } = supabase;
+// ── Fungsi penerapan dark mode ────────────────────────────────
+function applyDarkMode(isDark) {
+  const html = document.documentElement;
+  const body = document.body;
 
-// const SUPABASE_URL = "https://kxmnvtgnwuhdkrzzpwxi.supabase.co";
-// const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4bW52dGdud3VoZGtyenpwd3hpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTA3OTgsImV4cCI6MjA1NTI2Njc5OH0.l0DeaGtDKbr-EhNX5DpEUDSNtF1Y3L_Rdqn2bUC7JcA";
+  if (isDark) {
+    html.classList.add("dark");
+    body.classList.add("dark-mode");
+    // Inject style override langsung karena Tailwind CDN tidak support darkMode: 'class' secara default
+    let darkStyle = document.getElementById("dark-mode-style");
+    if (!darkStyle) {
+      darkStyle = document.createElement("style");
+      darkStyle.id = "dark-mode-style";
+      document.head.appendChild(darkStyle);
+    }
+    darkStyle.textContent = `
+      body.dark-mode {
+        background-color: #111827 !important;
+        color: #f9fafb !important;
+      }
+      body.dark-mode .bg-white {
+        background-color: #1f2937 !important;
+        color: #f9fafb !important;
+      }
+      body.dark-mode .bg-gray-100 {
+        background-color: #374151 !important;
+        color: #f9fafb !important;
+      }
+      body.dark-mode .bg-gray-200 {
+        background-color: #4b5563 !important;
+      }
+      body.dark-mode .text-gray-700 {
+        color: #e5e7eb !important;
+      }
+      body.dark-mode .text-gray-800 {
+        color: #f3f4f6 !important;
+      }
+      body.dark-mode .text-gray-500 {
+        color: #9ca3af !important;
+      }
+      body.dark-mode .shadow-lg,
+      body.dark-mode .shadow-md,
+      body.dark-mode .shadow-2xl,
+      body.dark-mode .shadow-xl {
+        box-shadow: 0 4px 24px 0 rgba(0,0,0,0.6) !important;
+      }
+      body.dark-mode .border {
+        border-color: #374151 !important;
+      }
+      body.dark-mode .border-gray-200,
+      body.dark-mode .border-emerald-100,
+      body.dark-mode .border-purple-100,
+      body.dark-mode .border-indigo-100 {
+        border-color: #374151 !important;
+      }
+      body.dark-mode input[type="text"],
+      body.dark-mode input[type="time"] {
+        background-color: #374151 !important;
+        color: #f9fafb !important;
+        border-color: #4b5563 !important;
+      }
+      body.dark-mode .bg-gradient-to-br.from-blue-50 {
+        background: linear-gradient(135deg, #1e3a5f, #1f2937) !important;
+      }
+      body.dark-mode .bg-gradient-to-br.from-emerald-50 {
+        background: linear-gradient(135deg, #064e3b, #1f2937) !important;
+      }
+      body.dark-mode .bg-gradient-to-br.from-purple-50 {
+        background: linear-gradient(135deg, #3b0764, #1f2937) !important;
+      }
+      body.dark-mode .bg-gradient-to-br.from-indigo-50 {
+        background: linear-gradient(135deg, #1e1b4b, #1f2937) !important;
+      }
+      body.dark-mode h2.text-gray-800,
+      body.dark-mode h3.text-emerald-800,
+      body.dark-mode h3.text-purple-800,
+      body.dark-mode h3.text-indigo-800 {
+        color: #e5e7eb !important;
+      }
+      body.dark-mode .text-emerald-800 { color: #6ee7b7 !important; }
+      body.dark-mode .text-purple-800  { color: #c4b5fd !important; }
+      body.dark-mode .text-indigo-800  { color: #a5b4fc !important; }
+      body.dark-mode span.text-gray-700,
+      body.dark-mode label span.text-gray-700 {
+        color: #d1d5db !important;
+      }
+      body.dark-mode th {
+        background-color: #1f2937 !important;
+        color: #f9fafb !important;
+      }
+      body.dark-mode td {
+        background-color: #111827 !important;
+        color: #f9fafb !important;
+      }
+      body.dark-mode .bg-green-100 {
+        background-color: #064e3b !important;
+      }
+      body.dark-mode .bg-red-100 {
+        background-color: #7f1d1d !important;
+      }
+      body.dark-mode #theme-light {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+        color: #e5e7eb !important;
+      }
+    `;
+  } else {
+    html.classList.remove("dark");
+    body.classList.remove("dark-mode");
+    const darkStyle = document.getElementById("dark-mode-style");
+    if (darkStyle) darkStyle.textContent = "";
+  }
 
-// // Membuat Supabase Client
-// window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+}
 
-// console.log('✅ Supabase client berhasil diinisialisasi:', window.supabaseClient);
+// ── Audio context untuk notifikasi suara ────────────────────
+function playNotificationSound(type = "default") {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
 
+    const sounds = {
+      default: [
+        { freq: 523, dur: 0.1, start: 0 },
+        { freq: 659, dur: 0.1, start: 0.12 },
+        { freq: 784, dur: 0.2, start: 0.24 }
+      ],
+      success: [
+        { freq: 392, dur: 0.08, start: 0 },
+        { freq: 523, dur: 0.08, start: 0.1 },
+        { freq: 659, dur: 0.08, start: 0.2 },
+        { freq: 784, dur: 0.2,  start: 0.3 }
+      ],
+      warning: [
+        { freq: 440, dur: 0.15, start: 0 },
+        { freq: 440, dur: 0.15, start: 0.2 }
+      ],
+      error: [
+        { freq: 300, dur: 0.2, start: 0 },
+        { freq: 200, dur: 0.3, start: 0.25 }
+      ],
+      info: [
+        { freq: 660, dur: 0.1, start: 0 },
+        { freq: 880, dur: 0.15, start: 0.15 }
+      ]
+    };
+
+    const notes = sounds[type] || sounds.default;
+    notes.forEach(({ freq, dur, start }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch (e) {
+    console.warn("Audio tidak tersedia:", e);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem("theme") || "light";
+  applyDarkMode(savedTheme === "dark");
+
   const mulaiButton = document.getElementById('mulai');
-  // Menambahkan event listener untuk animasi tombol
   mulaiButton.addEventListener('click', () => {
-    // Tambahkan animasi smooth (misalnya, perubahan skala dan opacity) pada tombol
     mulaiButton.classList.add('scale-110', 'opacity-90', 'transition-all', 'duration-1000');
-
-    // Setelah animasi selesai, pindahkan ke halaman isi
     setTimeout(() => {
-      // Hapus animasi untuk kembali ke keadaan semula
       mulaiButton.classList.remove('scale-110', 'opacity-90');
-
-      // Panggil fungsi renderHabitTracker untuk mengganti konten
       renderHabitTracker('dashboard');
-    }, 1000); // Durasi animasi dalam milidetik (1 detik)
+    }, 1000);
   });
 
-// Fungsi untuk merender halaman isi (habit tracker) dengan navigasi
+// ── renderHabitTracker ────────────────────────────────────────
 function renderHabitTracker(activeFeature = 'dashboard') {
   document.body.innerHTML = `
     <div class="flex flex-col sm:flex-row min-h-screen w-full bg-gradient-to-r from-green-200 via-blue-300 to-purple-400">
@@ -40,14 +191,16 @@ function renderHabitTracker(activeFeature = 'dashboard') {
       </div>
     </div>
   `;
-   initializeNavbarEvents();
-   // Setelah elemen dirender, terapkan pengaturan
-   if (activeFeature === 'settings') {
-    setting();  // Memanggil setting() di sini untuk memastikan pengaturan diterapkan
-  }
 
-  // Pastikan dipanggil setelah elemen sudah dirende
-  if (activeFeature === 'dashboard') {
+  // Terapkan ulang tema setelah innerHTML diganti
+  const currentTheme = localStorage.getItem("theme") || "light";
+  applyDarkMode(currentTheme === "dark");
+
+  initializeNavbarEvents();
+
+  if (activeFeature === 'settings') {
+    setting();
+  } else if (activeFeature === 'dashboard') {
     initializeChart();
     displayCurrentTime();
     updateCalendar();
@@ -58,52 +211,43 @@ function renderHabitTracker(activeFeature = 'dashboard') {
   }
 }
 
-  // Fungsi konten dengan fitur yang aktif
-  function renderContentByFeature(activeFeature) {
-    switch (activeFeature) {
-      case 'dashboard':
-        return renderMainContent();
-      case 'habit-list':
-        return renderHabitList();
-      case 'rekapitulasi':
-        return renderRekapitulasi();
-      case 'settings':
-        return renderSettings();
-        default:
-          return '';
-    }
+// ── renderContentByFeature ───────────────────────────────────
+function renderContentByFeature(activeFeature) {
+  switch (activeFeature) {
+    case 'dashboard':    return renderMainContent();
+    case 'habit-list':   return renderHabitList();
+    case 'rekapitulasi': return renderRekapitulasi();
+    case 'settings':     return renderSettings();
+    default:             return '';
   }
-  
+}
+
+// ── renderSidebar ────────────────────────────────────────────
 function renderSidebar(activeFeature) {
   const features = [
-    { name: 'Dashboard', icon: 'dashboard', id: 'dashboard' },
-    { name: 'Daftar Kebiasaan', icon: 'list_alt', id: 'habit-list' },
-    { name: 'Rekapitulasi', icon: 'bar_chart', id: 'rekapitulasi' },
-    { name: 'Pengaturan', icon: 'settings', id: 'settings' },
+    { name: 'Dashboard',        icon: 'dashboard',  id: 'dashboard'    },
+    { name: 'Daftar Kebiasaan', icon: 'list_alt',   id: 'habit-list'   },
+    { name: 'Rekapitulasi',     icon: 'bar_chart',  id: 'rekapitulasi' },
+    { name: 'Pengaturan',       icon: 'settings',   id: 'settings'     },
   ];
 
-  // Template sidebar
   const sidebar = `
     <div class="hidden sm:flex sm:w-64 bg-white shadow-lg flex-col min-h-screen">
       <div class="text-center text-xl font-bold p-4 text-blue-600">
         Habit Tracker
       </div>
       <ul class="p-4 flex-grow space-y-2">
-        ${features
-          .map((feature) => {
-            const isActive = feature.id === activeFeature ? 'bg-blue-100 text-blue-600 font-semibold' : '';
-            return `
-              <li class="flex items-center px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-50 ${isActive}" 
-                  data-feature="${feature.id}">
-                <span class="material-icons-outlined mr-3">${feature.icon}</span>
-                <span class="text-lg">${feature.name}</span>
-              </li>
-            `;
-          })
-          .join('')}
+        ${features.map((feature) => {
+          const isActive = feature.id === activeFeature ? 'bg-blue-100 text-blue-600 font-semibold' : '';
+          return `
+            <li class="flex items-center px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-50 ${isActive}"
+                data-feature="${feature.id}">
+              <span class="material-icons-outlined mr-3">${feature.icon}</span>
+              <span class="text-lg">${feature.name}</span>
+            </li>
+          `;
+        }).join('')}
       </ul>
-
-      <!-- Footer Section -->
       <div class="p-4 bg-gray-800 text-white text-center mt-auto">
         <p class="text-sm">&copy; 2025 Habit Tracker. All Rights Reserved.</p>
         <div class="flex justify-center space-x-4 mt-2">
@@ -115,59 +259,53 @@ function renderSidebar(activeFeature) {
     </div>
   `;
 
-  // Render sidebar ke halaman
   setTimeout(() => {
-    // Event binding untuk semua item sidebar
     document.querySelectorAll('[data-feature]').forEach((item) => {
       item.addEventListener('click', (e) => {
         const featureId = e.currentTarget.getAttribute('data-feature');
-        renderHabitTracker(featureId); // Fungsi untuk navigasi antar fitur
+        renderHabitTracker(featureId);
       });
     });
   }, 0);
 
   return sidebar;
-}  
-
-// Fungsi untuk Navbar kecil
-function renderNavbarSmall() {
-return `
-  <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md">
-    <div class="relative">
-      <button id="menuBtn" class="btn btn-ghost btn-circle focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300 hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-        </svg>
-      </button>
-      <ul id="menuDropdown" class="hidden absolute left-0 mt-3 w-56 bg-gray-800 text-white rounded-lg shadow-2xl opacity-0 transform scale-95 transition-all duration-300 z-50">
-        <li><button data-feature="dashboard" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>🏠</span> Dashboard</button></li>
-        <li><button data-feature="habit-list" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📋</span> Daftar Kebiasaan</button></li>
-        <li><button data-feature="rekapitulasi" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📊</span> Rekapitulasi</button></li>
-        <li><button data-feature="settings" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>⚙️</span> Pengaturan</button></li>
-      </ul>
-    </div>
-    <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle hover:scale-110 transition-transform">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-yellow-400 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M18 8h1a2 2 0 1 1 0 4h-1V8ZM3 4h15a3 3 0 0 1 3 3v5a5 5 0 0 1-5 5h-2v2a2 2 0 1 1-4 0v-2H5a2 2 0 1 1-2-2V6a2 2 0 0 1 2-2Zm15 10a3 3 0 0 0 3-3V7a1 1 0 0 0-1-1h-1v8Zm-2-8H5v9a.98.98 0 0 0 .28.7.99.99 0 0 0 .72.3h9a3 3 0 0 0 3-3V6ZM5 16h10H5Z"></path>
-      </svg>
-    </a>
-  </div>
-`;
-
 }
 
+// ── renderNavbarSmall ────────────────────────────────────────
+function renderNavbarSmall() {
+  return `
+    <div class="sm:hidden bg-gray-900 text-white px-5 py-3 flex justify-between items-center shadow-md">
+      <div class="relative">
+        <button id="menuBtn" class="btn btn-ghost btn-circle focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transition-transform duration-300 hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+        </button>
+        <ul id="menuDropdown" class="hidden absolute left-0 mt-3 w-56 bg-gray-800 text-white rounded-lg shadow-2xl opacity-0 transform scale-95 transition-all duration-300 z-50">
+          <li><button data-feature="dashboard"    class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>🏠</span> Dashboard</button></li>
+          <li><button data-feature="habit-list"   class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📋</span> Daftar Kebiasaan</button></li>
+          <li><button data-feature="rekapitulasi" class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>📊</span> Rekapitulasi</button></li>
+          <li><button data-feature="settings"     class="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-md transition transform hover:scale-105"><span>⚙️</span> Pengaturan</button></li>
+        </ul>
+      </div>
+      <a href="https://trakteer.id/den_mardiyana" target="_blank" class="btn btn-ghost btn-circle hover:scale-110 transition-transform">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-yellow-400 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18 8h1a2 2 0 1 1 0 4h-1V8ZM3 4h15a3 3 0 0 1 3 3v5a5 5 0 0 1-5 5h-2v2a2 2 0 1 1-4 0v-2H5a2 2 0 1 1-2-2V6a2 2 0 0 1 2-2Zm15 10a3 3 0 0 0 3-3V7a1 1 0 0 0-1-1h-1v8Zm-2-8H5v9a.98.98 0 0 0 .28.7.99.99 0 0 0 .72.3h9a3 3 0 0 0 3-3V6ZM5 16h10H5Z"></path>
+        </svg>
+      </a>
+    </div>
+  `;
+}
+
+// ── initializeNavbarEvents ───────────────────────────────────
 function initializeNavbarEvents() {
-  const menuBtn = document.getElementById("menuBtn");
+  const menuBtn      = document.getElementById("menuBtn");
   const menuDropdown = document.getElementById("menuDropdown");
+  if (!menuBtn || !menuDropdown) return;
 
-  if (!menuBtn || !menuDropdown) return; // Cegah error jika elemen belum ada
-
-  // Toggle menu saat tombol ditekan
   menuBtn.addEventListener("click", (event) => {
-    event.stopPropagation(); // Hindari trigger event click pada document
-
+    event.stopPropagation();
     const isHidden = menuDropdown.classList.contains("hidden");
-
     if (isHidden) {
       menuDropdown.classList.remove("hidden");
       setTimeout(() => {
@@ -181,7 +319,6 @@ function initializeNavbarEvents() {
     }
   });
 
-  // Menutup menu jika klik di luar area dropdown
   document.addEventListener("click", (event) => {
     if (!menuBtn.contains(event.target) && !menuDropdown.contains(event.target)) {
       menuDropdown.classList.remove("opacity-100", "scale-100");
@@ -190,13 +327,10 @@ function initializeNavbarEvents() {
     }
   });
 
-  // Event klik pada dropdown item
   document.querySelectorAll('.dropdown-item').forEach((item) => {
     item.addEventListener("click", (e) => {
       const featureId = e.currentTarget.getAttribute("data-feature");
       renderHabitTracker(featureId);
-
-      // Tutup dropdown setelah klik
       menuDropdown.classList.remove("opacity-100", "scale-100");
       menuDropdown.classList.add("opacity-0", "scale-95");
       setTimeout(() => menuDropdown.classList.add("hidden"), 300);
@@ -204,190 +338,228 @@ function initializeNavbarEvents() {
   });
 }
 
-
-  // Fungsi untuk Dashboard
-  function renderMainContent() {
-    return `
-      <div class="flex-1 overflow-y-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <!-- Grafik Kebiasaan -->
-          <div class="md:col-span-2 bg-gradient-to-br from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-3xl">
-          <h2 class="text-3xl font-bold text-gray-800 dark:text-white text-center mb-8">Grafik Kebiasaan</h2>
-  
-          <div id="chartContainer" class="relative p-6 md:p-8 bg-white dark:bg-gray-900 shadow-xl rounded-2xl flex justify-center items-center">
-          <canvas id="habitChart" class="w-full h-72 md:h-96"></canvas>
+// ── renderMainContent (Dashboard) ───────────────────────────
+function renderMainContent() {
+  return `
+    <div class="flex-1 overflow-y-auto p-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-2xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-3xl">
+          <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Grafik Kebiasaan</h2>
+          <div id="chartContainer" class="relative p-6 md:p-8 bg-white shadow-xl rounded-2xl flex justify-center items-center">
+            <canvas id="habitChart" class="w-full h-72 md:h-96"></canvas>
           </div>
-          </div>
-
-          
-          <!-- Waktu Saat Ini -->
-          <div class="bg-gradient-to-br from-blue-500 to-indigo-700 shadow-xl rounded-lg p-6 text-white">
-            <h2 class="text-2xl font-bold text-center mb-6">Waktu Saat Ini</h2>
-            <div id="currentTime" class="text-center">
-              <div class="flex justify-center items-center space-x-3">
-                <span class="text-4xl font-bold">Loading...</span>
-              </div>
-              <p class="text-gray-200 text-sm mt-4">Zona waktu lokal Anda</p>
+        </div>
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-700 shadow-xl rounded-lg p-6 text-white">
+          <h2 class="text-2xl font-bold text-center mb-6">Waktu Saat Ini</h2>
+          <div id="currentTime" class="text-center">
+            <div class="flex justify-center items-center space-x-3">
+              <span class="text-4xl font-bold">Loading...</span>
             </div>
-  
-            <!-- Kalender -->
-            <div id="calendar" class="mt-8 text-center">
-              <div id="calendarContainer" class="inline-block p-4 bg-white text-blue-500 rounded-lg shadow-md">
-                <p id="calendarDay" class="text-4xl font-semibold">00</p>
-                <p id="calendarMonthYear" class="text-sm mt-2">Month, Year</p>
-              </div>
+            <p class="text-gray-200 text-sm mt-4">Zona waktu lokal Anda</p>
+          </div>
+          <div id="calendar" class="mt-8 text-center">
+            <div id="calendarContainer" class="inline-block p-4 bg-white text-blue-500 rounded-lg shadow-md">
+              <p id="calendarDay" class="text-4xl font-semibold">00</p>
+              <p id="calendarMonthYear" class="text-sm mt-2">Month, Year</p>
             </div>
           </div>
         </div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
-  // Fungsi untuk merender daftar kebiasaan
-  function renderHabitList() {
-    return `
-      <div class="bg-white shadow-lg rounded-lg p-6">
-        <h2 class="text-2xl font-semibold text-gray-700 mb-4">Daftar Kebiasaan</h2>
-        <input id="habit-input" type="text" placeholder="Nama kebiasaan" class="border p-2 rounded-lg mb-4 w-full" />
-        <input id="habit-time" type="time" class="border p-2 rounded-lg mb-4 w-full" />
-        <button id="add-habit" class="bg-blue-500 text-white px-4 py-2 rounded-lg mb-4">Tambah Kebiasaan</button>
-        <ul id="habit-list" class="space-y-4">
-          <!-- Kebiasaan akan ditambahkan secara dinamis -->
-        </ul>
-        <div class="container mx-auto mt-6">
-          <!-- Completed List -->
-          <div class="bg-white shadow-md rounded-lg p-4 mb-6">
-            <h2 class="text-lg font-bold text-green-600 mb-3">Kebiasaan Selesai</h2>
-            <ul id="completed-list" class="space-y-2">
-              <!-- Elemen berhasil ditambahkan akan muncul di sini -->
-            </ul>
-            <h2 class="text-lg font-bold text-red-600 mb-3">Kebiasaan Gagal</h2>
-            <ul id="failed-list" class="space-y-2">
-              <!-- Elemen gagal ditambahkan akan muncul di sini -->
-            </ul>
-            <button id="finish" class="finish-button bg-green-500 text-white px-4 py-2 rounded-lg w-full hover:bg-green-600 mt-4">
-              Finish
-            </button>
-          </div>
+// ── renderHabitList ──────────────────────────────────────────
+function renderHabitList() {
+  return `
+    <div class="bg-white shadow-lg rounded-lg p-6">
+      <h2 class="text-2xl font-semibold text-gray-700 mb-4">Daftar Kebiasaan</h2>
+      <input id="habit-input" type="text" placeholder="Nama kebiasaan" class="border p-2 rounded-lg mb-4 w-full" />
+      <input id="habit-time" type="time" class="border p-2 rounded-lg mb-4 w-full" />
+      <button id="add-habit" class="bg-blue-500 text-white px-4 py-2 rounded-lg mb-4">Tambah Kebiasaan</button>
+      <ul id="habit-list" class="space-y-4"></ul>
+      <div class="container mx-auto mt-6">
+        <div class="bg-white shadow-md rounded-lg p-4 mb-6">
+          <h2 class="text-lg font-bold text-green-600 mb-3">Kebiasaan Selesai</h2>
+          <ul id="completed-list" class="space-y-2"></ul>
+          <h2 class="text-lg font-bold text-red-600 mb-3">Kebiasaan Gagal</h2>
+          <ul id="failed-list" class="space-y-2"></ul>
+          <button id="finish" class="finish-button bg-green-500 text-white px-4 py-2 rounded-lg w-full hover:bg-green-600 mt-4">
+            Finish
+          </button>
         </div>
       </div>
-    `;
-  }
-  
-  
-// Fungsi untuk merender rekapitulasi
+    </div>
+  `;
+}
+
+// ── renderRekapitulasi ───────────────────────────────────────
 function renderRekapitulasi() {
   return `
     <h2 class="text-xl font-bold mb-4">Rekapitulasi Kebiasaan</h2>
     <table id="rekapitulasi-table" class="min-w-full">
-    <thead>
-      <tr>
-        <th class="border px-4 py-2">No</th>
-        <th class="border px-4 py-2">Kegiatan</th>
-        <th class="border px-4 py-2">Status</th>
-        <th class="border px-4 py-2">Tanggal</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Data akan dirender di sini -->
-    </tbody>
-  </table>
-  <button id="reset-rekap" class="bg-red-500 text-white px-4 py-2 mt-4 rounded-lg">
-      Reset Data
-    </button>
-  
+      <thead>
+        <tr>
+          <th class="border px-4 py-2">No</th>
+          <th class="border px-4 py-2">Kegiatan</th>
+          <th class="border px-4 py-2">Status</th>
+          <th class="border px-4 py-2">Tanggal</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="reset-rekap" class="bg-red-500 text-white px-4 py-2 mt-4 rounded-lg">Reset Data</button>
   `;
 }
 
-// Fungsi untuk mendapatkan data dari LocalStorage
+// ── renderSettings ───────────────────────────────────────────
+function renderSettings() {
+  return `
+    <div class="flex-1 overflow-y-auto p-6">
+      <h2 class="text-3xl font-bold text-gray-800 mb-8">Pengaturan</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Notifikasi -->
+        <div class="bg-gradient-to-br from-emerald-50 to-white rounded-2xl shadow-2xl p-8 border border-emerald-100 transition-all duration-500 hover:scale-105">
+          <h3 class="text-2xl font-bold text-emerald-800 mb-6 flex items-center">
+            <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            Notifikasi
+          </h3>
+          <div class="space-y-6">
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="notification-toggle" class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2">
+              <span class="text-lg font-semibold text-gray-700">Aktifkan Notifikasi</span>
+            </label>
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="sound-toggle" class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2">
+              <span class="text-lg font-semibold text-gray-700">Suara Notifikasi</span>
+            </label>
+            <!-- Preview suara -->
+            <div id="sound-preview-container" class="hidden">
+              <p class="text-sm text-gray-500 mb-2">Preview suara:</p>
+              <div class="flex flex-wrap gap-2">
+                <button data-sound="default" id="preview-default" class="sound-preview-btn px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition">🔔 Default</button>
+                <button data-sound="success" id="preview-success" class="sound-preview-btn px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm hover:bg-green-200 transition">Sukses</button>
+                <button data-sound="warning" id="preview-warning" class="sound-preview-btn px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-sm hover:bg-yellow-200 transition">Peringatan</button>
+                <button data-sound="error"   id="preview-error"   class="sound-preview-btn px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition">Error</button>
+                <button data-sound="info"    id="preview-info"    class="sound-preview-btn px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 transition">Info</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tampilan / Tema -->
+        <div class="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-2xl p-8 border border-purple-100 transition-all duration-500 hover:scale-105">
+          <h3 class="text-2xl font-bold text-purple-800 mb-6 flex items-center">
+            <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            Tampilan
+          </h3>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-lg font-semibold text-gray-700 mb-3">Tema</label>
+              <div class="flex space-x-3">
+                <button id="theme-light" class="flex-1 bg-white border-2 border-gray-200 rounded-xl p-4 text-sm font-medium hover:shadow-lg transition-all duration-300 text-gray-700">
+                  <div class="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full mx-auto mb-2 shadow-lg"></div>
+                </button>
+                <button id="theme-dark" class="flex-1 bg-gray-800 border-2 border-gray-600 rounded-xl p-4 text-sm font-medium hover:shadow-lg transition-all duration-300 text-gray-200">
+                  <div class="w-12 h-12 bg-gradient-to-r from-gray-700 to-gray-900 rounded-full mx-auto mb-2 shadow-lg"></div>
+                </button>
+              </div>
+              <!-- Indikator tema aktif -->
+              <p id="theme-status" class="text-sm text-center mt-3 text-gray-500 font-medium"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data & Privasi -->
+        <div class="md:col-span-2 bg-gradient-to-br from-indigo-50 to-white rounded-2xl shadow-2xl p-8 border border-indigo-100 transition-all duration-500 hover:scale-105">
+          <h3 class="text-2xl font-bold text-indigo-800 mb-6 flex items-center">
+            <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            Data & Privasi
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button id="export-data" class="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center space-x-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10l-5.5 5.5m0 0L12 21l5.5-5.5m-5.5 0H20"/>
+              </svg>
+              <span>Export Data</span>
+            </button>
+            <button id="reset-all" class="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold py-4 px-6 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center space-x-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span>Reset Semua</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+// ── getHabitData / saveHabitData ─────────────────────────────
 function getHabitData() {
   const data = localStorage.getItem('habitTrackerData');
   return data ? JSON.parse(data) : [];
 }
-
-// Fungsi untuk menyimpan data ke LocalStorage
 function saveHabitData(data) {
   localStorage.setItem('habitTrackerData', JSON.stringify(data));
 }
 
-
-
-// Fungsi untuk mengambil dan merender data di halaman rekapitulasi
+// ── fetchAndRenderRekapitulasi ───────────────────────────────
 function fetchAndRenderRekapitulasi() {
-  console.log("🔍 Mengambil data rekapitulasi dari LocalStorage...");
-
   const tableBody = document.querySelector("#rekapitulasi-table tbody");
-
-  if (!tableBody) {
-    console.warn("❌ Elemen tabel tidak ditemukan.");
-    return;
-  }
-
-  tableBody.innerHTML = ''; // Kosongkan tabel sebelum render
-
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
   const data = getHabitData();
-
   if (!data || data.length === 0) {
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="4" class="border px-4 py-2 text-center text-gray-500">
-          ⚠️ Belum ada data rekapitulasi.
-        </td>
-      </tr>
-    `;
+    tableBody.innerHTML = `<tr><td colspan="4" class="border px-4 py-2 text-center text-gray-500">⚠️ Belum ada data rekapitulasi.</td></tr>`;
     return;
   }
-
-  console.log("✅ Data rekapitulasi dari LocalStorage:", data);
-
-tableBody.innerHTML = data.map((item, index) => `
-  <tr>
-    <td class="border px-4 py-2">${index + 1}</td>
-    <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
-    <td class="border px-4 py-2">${item.status === 'selesai' ? 'Selesai' : 'Gagal'}</td>
-    <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
-  </tr>
-`).join('');
-
+  tableBody.innerHTML = data.map((item, index) => `
+    <tr>
+      <td class="border px-4 py-2">${index + 1}</td>
+      <td class="border px-4 py-2">${item.nama || 'N/A'}</td>
+      <td class="border px-4 py-2">${item.status === 'selesai' ? 'Selesai' : 'Gagal'}</td>
+      <td class="border px-4 py-2">${item.tanggal ? new Date(item.tanggal).toLocaleString() : 'N/A'}</td>
+    </tr>
+  `).join('');
 }
 
-// Fungsi untuk menghapus data rekapitulasi dari LocalStorage
 function resetRekapitulasi() {
-  if (confirm("⚠️ Apakah Anda yakin ingin menghapus semua data rekapitulasi?")) {
+  if (confirm("Apakah Anda yakin ingin menghapus semua data rekapitulasi?")) {
     try {
-      localStorage.removeItem("habitTrackerData"); // Hapus semua data
-      fetchAndRenderRekapitulasi(); // Perbarui tampilan setelah reset
-      alert("✅ Data rekapitulasi berhasil dihapus!");
+      localStorage.removeItem("habitTrackerData");
+      fetchAndRenderRekapitulasi();
+      alert("Data rekapitulasi berhasil dihapus!");
     } catch (error) {
-      console.error("❌ Error saat menghapus data rekapitulasi:", error);
-      alert("❌ Gagal menghapus data rekapitulasi. Coba lagi!");
+      alert("Gagal menghapus data rekapitulasi. Coba lagi!");
     }
   }
 }
 
-// Event listener untuk tombol reset setelah halaman dirender
 document.addEventListener("click", (event) => {
-  if (event.target.id === "reset-rekap") {
-    resetRekapitulasi();
-  }
+  if (event.target.id === "reset-rekap") resetRekapitulasi();
 });
 
-
-// Fungsi initializeChart
+// ── initializeChart ──────────────────────────────────────────
 function initializeChart() {
-  const ctx = document.getElementById("habitChart").getContext("2d");
   const data = getHabitData() || [];
-
-  // Hitung jumlah selesai dan gagal
-  let selesaiCount = 0;
-  let gagalCount = 0;
-
+  let selesaiCount = 0, gagalCount = 0;
   data.forEach((item) => {
     if (item.status === "selesai") selesaiCount++;
-    if (item.status === "gagal") gagalCount++;
+    if (item.status === "gagal")   gagalCount++;
   });
 
-  // Hapus canvas lama agar tidak duplikat
   document.getElementById("habitChart").remove();
   const newCanvas = document.createElement("canvas");
   newCanvas.id = "habitChart";
@@ -395,19 +567,16 @@ function initializeChart() {
   document.getElementById("chartContainer").appendChild(newCanvas);
   const newCtx = newCanvas.getContext("2d");
 
-  // Buat Doughnut Chart
   new Chart(newCtx, {
     type: "doughnut",
     data: {
       labels: ["Kebiasaan Selesai", "Kebiasaan Gagal"],
-      datasets: [
-        {
-          data: [selesaiCount, gagalCount],
-          backgroundColor: ["rgba(0, 192, 255, 0.8)", "rgba(255, 75, 75, 0.8)"],
-          borderColor: ["rgba(0, 192, 255, 1)", "rgba(255, 75, 75, 1)"],
-          borderWidth: 2,
-        },
-      ],
+      datasets: [{
+        data: [selesaiCount, gagalCount],
+        backgroundColor: ["rgba(0, 192, 255, 0.8)", "rgba(255, 75, 75, 0.8)"],
+        borderColor: ["rgba(0, 192, 255, 1)", "rgba(255, 75, 75, 1)"],
+        borderWidth: 2,
+      }],
     },
     options: {
       responsive: true,
@@ -415,431 +584,391 @@ function initializeChart() {
       plugins: {
         legend: {
           position: "top",
-          labels: {
-            color: "#333",
-            font: { size: 14, weight: "bold" },
-          },
+          labels: { color: "#333", font: { size: 14, weight: "bold" } },
         },
       },
     },
   });
 }
 
-
-
+// ── saveTemporaryData (outer scope) ─────────────────────────
 function saveTemporaryData(type, habitName) {
   const storageKey = "tempHabitData";
   const existingData = JSON.parse(localStorage.getItem(storageKey)) || [];
-
   if (!habitName.trim()) {
-    console.error("❌ Nama kebiasaan tidak boleh kosong!");
-    displayAlert("❌ Nama kebiasaan tidak boleh kosong!", "error");
+    displayAlert("Nama kebiasaan tidak boleh kosong!", "error");
     return;
   }
-
-  // Hindari duplikasi
-  if (existingData.some(item => item.nama === habitName)) {
-    console.warn("⚠️ Habit sudah ada di daftar sementara.");
-    return;
-  }
-
+  if (existingData.some(item => item.nama === habitName)) return;
   existingData.push({
     nama: habitName,
     tanggal: new Date().toISOString(),
-    status: type === "completed" ? true : false
+    status: type === "completed"
   });
-
   localStorage.setItem(storageKey, JSON.stringify(existingData));
-
-  console.log(`✅ Habit "${habitName}" disimpan sementara!`);
   displayAlert(`✅ Habit "${habitName}" berhasil disimpan!`, "success");
 }
 
-
-// Fungsi untuk menginisialisasi tracker kebiasaan
+// ── initHabitTracker ─────────────────────────────────────────
 function initHabitTracker() {
   const habitInput = document.getElementById('habit-input');
-  const habitTime = document.getElementById('habit-time');
-  const habitList = document.getElementById('habit-list');
+  const habitTime  = document.getElementById('habit-time');
+  const habitList  = document.getElementById('habit-list');
   const storageKey = "tempHabitData";
 
-  // Fungsi untuk menyimpan ke localStorage
-  function saveTemporaryData(habitName, time) {
+  function saveTemp(habitName, time) {
     const existingData = JSON.parse(localStorage.getItem(storageKey)) || [];
-    const targetTime = parseTime(time);
-
-    // Cegah duplikasi data
     if (existingData.some(item => item.nama === habitName)) return;
-
-    existingData.push({ nama: habitName, waktu: time, targetTime: targetTime.getTime() });
+    existingData.push({ nama: habitName, waktu: time, targetTime: parseTime(time).getTime() });
     localStorage.setItem(storageKey, JSON.stringify(existingData));
   }
 
-  // Fungsi untuk memuat kebiasaan dari localStorage
   function loadHabits() {
     let storedHabits = JSON.parse(localStorage.getItem(storageKey)) || [];
-    console.log("📥 Memuat habit dari localStorage:", storedHabits);
-
     const now = new Date();
-
-    // Filter hanya yang masih berlaku
     storedHabits = storedHabits.filter(({ targetTime }) => targetTime > now.getTime());
-
-    // Hapus dulu daftar biar gak duplikat saat refresh
     habitList.innerHTML = "";
-
     storedHabits.forEach(({ nama, waktu, targetTime }) => {
       const habitItem = createHabitItem(nama, waktu);
       habitList.appendChild(habitItem);
-
       const delay = targetTime - now.getTime();
-      if (delay > 0) {
-        setTimeout(() => handleTimeout(habitItem, nama, waktu), delay);
-      }
+      if (delay > 0) setTimeout(() => handleTimeout(habitItem, nama, waktu), delay);
     });
-
-    // Simpan ulang habit yang masih valid ke localStorage
     localStorage.setItem(storageKey, JSON.stringify(storedHabits));
   }
 
-  // Tambahkan kebiasaan baru
   document.getElementById('add-habit').addEventListener('click', () => {
     const habitName = habitInput.value.trim();
     const time = habitTime.value;
-
-    if (!habitName || !time) {
-      displayAlert('Harap masukkan kegiatan dan waktu.', 'error');
-      return;
-    }
-
+    if (!habitName || !time) { displayAlert('Harap masukkan kegiatan dan waktu.', 'error'); return; }
     const targetTime = parseTime(time);
-    const now = new Date();
-
-    if (targetTime <= now) {
-      displayAlert('Waktu yang dimasukkan sudah terlewat. Silakan pilih waktu yang valid.', 'error');
-      return;
-    }
-
+    if (targetTime <= new Date()) { displayAlert('Waktu sudah terlewat.', 'error'); return; }
     const habitItem = createHabitItem(habitName, time);
     habitList.appendChild(habitItem);
     resetInputs(habitInput, habitTime);
-
-    // Simpan ke localStorage
-    saveTemporaryData(habitName, time);
-
-    console.log("✅ Habit berhasil disimpan:", habitName);
-
-    const delay = targetTime - now;
+    saveTemp(habitName, time);
+    const delay = targetTime - new Date();
     setTimeout(() => handleTimeout(habitItem, habitName, time), delay);
   });
 
-  // **Pastikan loadHabits dipanggil setelah UI siap**
   loadHabits();
 }
 
-// Fungsi untuk menambah kebiasaan
 function createHabitItem(habitName, time) {
   const li = document.createElement('li');
   li.className = 'flex items-center justify-between bg-gray-100 px-4 py-3 rounded-lg shadow-md mb-4 transition-all hover:scale-105 hover:bg-gray-200';
-
   li.innerHTML = `
     <span class="text-gray-700 font-medium text-lg flex-1">${habitName} (Waktu: ${time})</span>
     <div class="flex items-center space-x-3">
-      <button class="selesai-button bg-green-500 text-white py-1 px-4 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 hidden transition-all">Selesai</button>
-      <button class="gagal-button bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 hidden transition-all">Gagal</button>
-    </div>
-  `;
-
+      <button class="selesai-button bg-green-500 text-white py-1 px-4 rounded-lg hover:bg-green-600 hidden transition-all">Selesai</button>
+      <button class="gagal-button bg-red-500 text-white py-1 px-4 rounded-lg hover:bg-red-600 hidden transition-all">Gagal</button>
+    </div>`;
   return li;
 }
 
-// Fungsi untuk menangani timeout dan mengelola status kebiasaan
 function handleTimeout(habitItem, habitName, time) {
+  // Bunyikan notifikasi jika sound aktif
+  if (localStorage.getItem("sound") === "true") {
+    playNotificationSound("default");
+  }
+  // Kirim browser notification jika aktif
+  if (localStorage.getItem("notifications") === "true" && Notification.permission === "granted") {
+    new Notification("⏰ Habit Tracker", { body: `Saatnya: ${habitName}!`, icon: "" });
+  }
   displayAlert(`Saatnya ${habitName}!`, 'info');
 
   const selesaiButton = habitItem.querySelector('.selesai-button');
-  const gagalButton = habitItem.querySelector('.gagal-button');
-  const finishButton = document.getElementById('finish');
+  const gagalButton   = habitItem.querySelector('.gagal-button');
+  const finishButton  = document.getElementById('finish');
 
   selesaiButton.classList.remove('hidden');
   gagalButton.classList.remove('hidden');
-  finishButton.classList.remove('hidden');
-
-  selesaiButton.classList.add('transition-transform', 'hover:scale-110');
-  gagalButton.classList.add('transition-transform', 'hover:scale-110');
+  if (finishButton) finishButton.classList.remove('hidden');
 
   if (!selesaiButton.hasAttribute('data-listener-added')) {
-    selesaiButton.addEventListener(
-      'click',
-      () => {
-        saveTemporaryData("completed", habitName);
-        const completedList = document.getElementById('completed-list');
-        if (completedList) {
-          const liCompleted = document.createElement('li');
-          liCompleted.className = 'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-green-200';
-          liCompleted.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
-          completedList.appendChild(liCompleted);
-          habitItem.remove();
-        }
-      },
-      { once: true }
-    );
+    selesaiButton.addEventListener('click', () => {
+      if (localStorage.getItem("sound") === "true") playNotificationSound("success");
+      saveTemporaryData("completed", habitName);
+      const completedList = document.getElementById('completed-list');
+      if (completedList) {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-green-100 px-4 py-2 rounded-lg shadow-md mb-2';
+        li.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-green-600 font-semibold">Selesai!</span>`;
+        completedList.appendChild(li);
+        habitItem.remove();
+      }
+    }, { once: true });
     selesaiButton.setAttribute('data-listener-added', 'true');
   }
 
   if (!gagalButton.hasAttribute('data-listener-added')) {
-    gagalButton.addEventListener(
-      'click',
-      () => {
-        saveTemporaryData("failed", habitName);
-        const failedList = document.getElementById('failed-list');
-        if (failedList) {
-          const liFailed = document.createElement('li');
-          liFailed.className = 'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2 transition-all hover:bg-red-200';
-          liFailed.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
-          failedList.appendChild(liFailed);
-          habitItem.remove();
-        }
-      },
-      { once: true }
-    );
+    gagalButton.addEventListener('click', () => {
+      if (localStorage.getItem("sound") === "true") playNotificationSound("error");
+      saveTemporaryData("failed", habitName);
+      const failedList = document.getElementById('failed-list');
+      if (failedList) {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-red-100 px-4 py-2 rounded-lg shadow-md mb-2';
+        li.innerHTML = `${habitName} (Waktu: ${time}) <span class="text-red-600 font-semibold">Gagal!</span>`;
+        failedList.appendChild(li);
+        habitItem.remove();
+      }
+    }, { once: true });
     gagalButton.setAttribute('data-listener-added', 'true');
   }
 
-  finishButton.addEventListener('click', () => {
-  try {
-    const completedList = document.getElementById('completed-list');
-    const failedList = document.getElementById('failed-list');
-    const storageKey = "tempHabitData"; // Data sementara
-
-    if (!completedList || !failedList) {
-      throw new Error("Elemen daftar tidak ditemukan.");
-    }
-
-    // Fungsi untuk mengambil dan menyaring data dari daftar selesai/gagal
-    const extractData = (list, status) =>
-      Array.from(list.children)
-        .map(li => ({
-          nama: li.textContent.split('(')[0].trim(),
-          tanggal: new Date().toISOString(),
-          status
-        }))
-        .filter(item => item.nama); // Hindari menyimpan elemen kosong
-
-    // Ambil data dari daftar selesai dan gagal
-    const completedData = extractData(completedList, "selesai");
-    const failedData = extractData(failedList, "gagal");
-    const newData = [...completedData, ...failedData];
-
-    if (newData.length === 0) {
-      return displayAlert('❌ Tidak ada data baru untuk disimpan!', 'warning');
-    }
-
-    const userConfirmed = confirm("Apakah kamu yakin ingin menyimpan progress ini?");
-    if (!userConfirmed) return;
-
-    // Ambil data lama dari localStorage menggunakan `habitTrackerData`
-    const existingData = getHabitData();
-    
-    // Gabungkan data lama dengan data baru
-    const finalData = Array.isArray(existingData) ? [...existingData, ...newData] : newData;
-
-    // Simpan ke localStorage
-    saveHabitData(finalData);
-    displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
-
-    // Bersihkan daftar setelah penyimpanan
-    completedList.innerHTML = '';
-    failedList.innerHTML = '';
-    localStorage.removeItem(storageKey);
-
-  } catch (error) {
-    console.error("❌ Terjadi kesalahan:", error.message);
-    displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
+  if (finishButton) {
+    finishButton.addEventListener('click', () => {
+      try {
+        const completedList = document.getElementById('completed-list');
+        const failedList    = document.getElementById('failed-list');
+        if (!completedList || !failedList) throw new Error("Elemen daftar tidak ditemukan.");
+        const extractData = (list, status) =>
+          Array.from(list.children)
+            .map(li => ({ nama: li.textContent.split('(')[0].trim(), tanggal: new Date().toISOString(), status }))
+            .filter(item => item.nama);
+        const newData = [...extractData(completedList, "selesai"), ...extractData(failedList, "gagal")];
+        if (newData.length === 0) return displayAlert('❌ Tidak ada data baru!', 'warning');
+        if (!confirm("Apakah kamu yakin ingin menyimpan progress ini?")) return;
+        const existingData = getHabitData();
+        saveHabitData(Array.isArray(existingData) ? [...existingData, ...newData] : newData);
+        if (localStorage.getItem("sound") === "true") playNotificationSound("success");
+        displayAlert('✅ Data terbaru berhasil disimpan!', 'success');
+        completedList.innerHTML = '';
+        failedList.innerHTML    = '';
+        localStorage.removeItem("tempHabitData");
+      } catch (error) {
+        displayAlert(`❌ Terjadi kesalahan: ${error.message}`, 'error');
+      }
+    });
   }
-});
-
 }
 
-
-// Fungsi untuk reset input
 function resetInputs(habitInput, habitTime) {
   habitInput.value = '';
-  habitTime.value = '';
+  habitTime.value  = '';
 }
 
-// Fungsi untuk menampilkan notifikasi
 function displayAlert(message, type) {
   const alertBox = document.createElement('div');
   alertBox.className = `fixed top-5 right-5 z-50 px-4 py-2 rounded-lg shadow-md transition-all ${
-    type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+    type === 'success' ? 'bg-green-500 text-white' :
+    type === 'error'   ? 'bg-red-500 text-white'   : 'bg-blue-500 text-white'
   }`;
   alertBox.textContent = message;
-
   document.body.appendChild(alertBox);
-
-  setTimeout(() => {
-    alertBox.remove();
-  }, 3000);
+  setTimeout(() => alertBox.remove(), 3000);
 }
 
-// Fungsi untuk memparsing waktu
 function parseTime(time) {
   const [hours, minutes] = time.split(':').map(Number);
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
 }
 
-
-  function displayCurrentTime() {
-    const timeElement = document.getElementById('currentTime');
-
-    function updateTime() {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        const formattedTime = `${hours}:${minutes}:${seconds}`;
-
-        timeElement.innerHTML = `
-          <div class="flex justify-center items-center space-x-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-300 animate-spin-slow" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25V4.75a.75.75 0 011.5 0v4h3.5a.75.75 0 010 1.5h-4a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-            </svg>
-            <span class="text-4xl font-bold tracking-wide">${formattedTime}</span>
-          </div>
-          <p class="text-gray-200 text-sm mt-4">Zona waktu lokal Anda</p>
-        `;
-    }
-
-    // Update time every second
-    updateTime();
-    setInterval(updateTime, 1000);
+function displayCurrentTime() {
+  const timeElement = document.getElementById('currentTime');
+  function updateTime() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2,'0');
+    const m = now.getMinutes().toString().padStart(2,'0');
+    const s = now.getSeconds().toString().padStart(2,'0');
+    timeElement.innerHTML = `
+      <div class="flex justify-center items-center space-x-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-300" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-9.25V4.75a.75.75 0 011.5 0v4h3.5a.75.75 0 010 1.5h-4a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-4xl font-bold tracking-wide">${h}:${m}:${s}</span>
+      </div>
+      <p class="text-gray-200 text-sm mt-4">Zona waktu lokal Anda</p>`;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
 }
 
-  // Kalender
-  function updateCalendar() {
+function updateCalendar() {
   const date = new Date();
-  const day = date.getDate();
-  const month = date.toLocaleString('default', { month: 'long' });
-  const year = date.getFullYear();
-
-  // Update elemen kalender
-  const calendarDay = document.getElementById('calendarDay');
-  const calendarMonthYear = document.getElementById('calendarMonthYear');
-  const calendarContainer = document.getElementById('calendarContainer');
-
-  calendarDay.textContent = day;
-  calendarMonthYear.textContent = `${month}, ${year}`;
-
-  // Animasi bounce
-  calendarContainer.classList.add('animate-bounce');
+  document.getElementById('calendarDay').textContent = date.getDate();
+  document.getElementById('calendarMonthYear').textContent =
+    `${date.toLocaleString('default', { month: 'long' })}, ${date.getFullYear()}`;
+  document.getElementById('calendarContainer').classList.add('animate-bounce');
 }
 
-// // Fungsi untuk merender pengaturan
-// function renderSettings() {
-//   return `
-//     <div class="container mx-auto p-4">
-//       <div class="bg-white shadow-md rounded-lg p-6">
-//         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pengaturan</h2>
-//         <form id="settingsForm">
-//           <div class="mb-4">
-//             <label for="theme" class="block text-gray-700 font-medium">Tema</label>
-//             <select id="theme" class="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-//               <option value="light">Terang</option>
-//               <option value="dark">Gelap</option>
-//             </select>
-//           </div>
+// ── exportHabitsData ─────────────────────────────────────────
+function exportHabitsData() {
+  try {
+    const data = getHabitData();
+    if (!data || data.length === 0) { alert("Tidak ada data untuk diekspor."); return false; }
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), totalRecords: data.length, data }, null, 2)], { type: "application/json" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `habit-tracker-export-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (e) {
+    alert("Gagal mengekspor data."); return false;
+  }
+}
 
-//           <div class="mb-4">
-//             <label for="language" class="block text-gray-700 font-medium">Bahasa</label>
-//             <select id="language" class="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-//               <option value="id">Indonesia</option>
-//               <option value="en">English</option>
-//             </select>
-//           </div>
+// ── resetAllData ─────────────────────────────────────────────
+function resetAllData() {
+  try {
+    localStorage.removeItem("habitTrackerData");
+    localStorage.removeItem("tempHabitData");
+  } catch (e) {
+    alert("Gagal mereset data.");
+  }
+}
 
-//           <div class="mb-4">
-//             <label for="notifications" class="block text-gray-700 font-medium">Notifikasi</label>
-//             <div class="flex items-center mt-2">
-//               <input type="checkbox" id="notifications" class="mr-2">
-//               <span class="text-gray-700">Aktifkan Notifikasi</span>
-//             </div>
-//           </div>
-
-//           <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">Simpan Pengaturan</button>
-//         </form>
-//       </div>
-//     </div>
-//   `;
-// }
-
-// Fungsi pengaturan tema dan lainnya
+// ── setting() — VERSI FINAL ──────────────────────────────────
 function setting() {
-  const themeSelect = document.getElementById("theme");
-  const languageSelect = document.getElementById("language");
-  const notificationsCheckbox = document.getElementById("notifications");
+  const notificationToggle  = document.getElementById("notification-toggle");
+  const soundToggle         = document.getElementById("sound-toggle");
+  const themeLightBtn       = document.getElementById("theme-light");
+  const themeDarkBtn        = document.getElementById("theme-dark");
+  const exportDataBtn       = document.getElementById("export-data");
+  const resetAllBtn         = document.getElementById("reset-all");
+  const themeStatus         = document.getElementById("theme-status");
+  const soundPreviewContainer = document.getElementById("sound-preview-container");
 
-  // Ambil pengaturan dari localStorage jika tersedia
-  const savedTheme = localStorage.getItem("theme") || "light";
-  const savedLanguage = localStorage.getItem("language") || "id";
+  if (!notificationToggle || !soundToggle || !themeLightBtn || !themeDarkBtn) {
+    console.warn("Elemen pengaturan tidak ditemukan.");
+    return;
+  }
+
+  // Terapkan state tersimpan
+  const savedTheme         = localStorage.getItem("theme") || "light";
   const savedNotifications = localStorage.getItem("notifications") === "true";
+  const savedSound         = localStorage.getItem("sound") === "true";
 
-  // Terapkan pengaturan yang tersimpan
-  themeSelect.value = savedTheme;
-  languageSelect.value = savedLanguage;
-  notificationsCheckbox.checked = savedNotifications;
+  notificationToggle.checked = savedNotifications;
+  soundToggle.checked        = savedSound;
 
-  // Terapkan tema gelap terlebih dahulu
-  applyDarkMode(savedTheme === "dark");
+  // Tampilkan/sembunyikan preview suara sesuai state awal
+  if (soundPreviewContainer) {
+    soundPreviewContainer.classList.toggle("hidden", !savedSound);
+  }
 
-  // Fungsi untuk menyimpan pengaturan
+  // Update indikator tema
+  function updateThemeUI(theme) {
+    themeLightBtn.classList.remove("ring-4", "ring-yellow-400", "ring-offset-2");
+    themeDarkBtn.classList.remove("ring-4", "ring-blue-400", "ring-offset-2");
+    if (theme === "dark") {
+      themeDarkBtn.classList.add("ring-4", "ring-blue-400", "ring-offset-2");
+      if (themeStatus) themeStatus.textContent = "🌙 Tema Gelap aktif";
+    } else {
+      themeLightBtn.classList.add("ring-4", "ring-yellow-400", "ring-offset-2");
+      if (themeStatus) themeStatus.textContent = "☀️ Tema Terang aktif";
+    }
+  }
+
+  updateThemeUI(savedTheme);
+
+  // Simpan semua pengaturan
   function saveSettings() {
-    localStorage.setItem("theme", themeSelect.value);
-    localStorage.setItem("language", languageSelect.value);
-    localStorage.setItem("notifications", notificationsCheckbox.checked);
+    const isDark = document.documentElement.classList.contains("dark");
+    localStorage.setItem("theme",         isDark ? "dark" : "light");
+    localStorage.setItem("notifications", notificationToggle.checked);
+    localStorage.setItem("sound",         soundToggle.checked);
   }
 
-  // Event listener untuk mengubah tema
-  themeSelect.addEventListener("change", function () {
-    const isDark = themeSelect.value === "dark";
-    applyDarkMode(isDark);  // Panggil applyDarkMode untuk tema gelap
+  // Toast notification
+  function showToast(message, type = "info") {
+    const existing = document.querySelector(".toast-notification");
+    if (existing) existing.remove();
+    const colorMap = { success: "bg-emerald-500", warning: "bg-amber-500", error: "bg-red-500", info: "bg-blue-500" };
+    const toast = document.createElement("div");
+    toast.className = `toast-notification fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl text-white font-medium transform translate-x-full transition-all duration-500 ${colorMap[type] || colorMap.info}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.remove("translate-x-full"));
+    setTimeout(() => {
+      toast.classList.add("translate-x-full");
+      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 500);
+    }, 3000);
+  }
+
+  // ── Tombol tema ──
+  themeLightBtn.addEventListener("click", () => {
+    applyDarkMode(false);
+    updateThemeUI("light");
     saveSettings();
+    showToast("☀️ Tema Terang diaktifkan", "success");
+    if (localStorage.getItem("sound") === "true") playNotificationSound("info");
   });
 
-  // Event listener untuk mengubah bahasa
-  languageSelect.addEventListener("change", function () {
+  themeDarkBtn.addEventListener("click", () => {
+    applyDarkMode(true);
+    updateThemeUI("dark");
     saveSettings();
-    alert("Bahasa telah diubah ke " + (languageSelect.value === "id" ? "Indonesia" : "English"));
+    showToast("🌙 Tema Gelap diaktifkan", "success");
+    if (localStorage.getItem("sound") === "true") playNotificationSound("info");
   });
 
-  // Event listener untuk notifikasi
-  notificationsCheckbox.addEventListener("change", function () {
+  // ── Toggle notifikasi ──
+  notificationToggle.addEventListener("change", function () {
     saveSettings();
-    alert(notificationsCheckbox.checked ? "Notifikasi diaktifkan" : "Notifikasi dinonaktifkan");
+    if (this.checked) {
+      // Minta izin browser notification
+      if (Notification.permission === "default") {
+        Notification.requestPermission().then(perm => {
+          showToast(perm === "granted" ? "Notifikasi browser diizinkan!" : "Izin notifikasi ditolak.", perm === "granted" ? "success" : "warning");
+        });
+      } else {
+        showToast("Notifikasi diaktifkan", "success");
+      }
+    } else {
+      showToast("Notifikasi dinonaktifkan", "info");
+    }
+    if (localStorage.getItem("sound") === "true") playNotificationSound("default");
   });
 
-  // Simpan pengaturan ketika formulir dikirim
-  settingsForm.addEventListener("submit", function (event) {
-    event.preventDefault(); // Mencegah reload halaman
-    saveSettings(); // Simpan pengaturan
-    alert("Pengaturan telah disimpan!"); // Berikan feedback ke pengguna
+  // ── Toggle suara ──
+  soundToggle.addEventListener("change", function () {
+    saveSettings();
+    // Tampilkan/sembunyikan preview
+    if (soundPreviewContainer) {
+      soundPreviewContainer.classList.toggle("hidden", !this.checked);
+    }
+    if (this.checked) {
+      playNotificationSound("success"); // preview langsung saat diaktifkan
+      showToast("🔊 Suara notifikasi diaktifkan", "success");
+    } else {
+      showToast("🔇 Suara notifikasi dimatikan", "info");
+    }
+  });
 
-    // Pastikan perubahan tema diterapkan
-    const isDark = themeSelect.value === "dark";
-    applyDarkMode(isDark);  // Panggil applyDarkMode untuk memastikan tema gelap diterapkan
+  // ── Tombol preview suara ──
+  document.querySelectorAll(".sound-preview-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const soundType = btn.getAttribute("data-sound");
+      playNotificationSound(soundType);
+      btn.style.transform = "scale(0.95)";
+      setTimeout(() => { btn.style.transform = "scale(1)"; }, 150);
+    });
+  });
+
+  // ── Export data ──
+  exportDataBtn.addEventListener("click", () => {
+    const success = exportHabitsData();
+    if (success) {
+      showToast("📤 Data berhasil diekspor!", "success");
+      if (localStorage.getItem("sound") === "true") playNotificationSound("success");
+    }
+  });
+
+  // ── Reset semua ──
+  resetAllBtn.addEventListener("click", () => {
+    if (confirm("Apakah Anda yakin ingin mereset SEMUA data? Tindakan ini tidak dapat dibatalkan!")) {
+      resetAllData();
+      if (localStorage.getItem("sound") === "true") playNotificationSound("warning");
+      showToast("Semua data telah direset!", "warning");
+    }
   });
 }
 
-
-// Fungsi untuk menerapkan tema gelap (dark mode)
-function applyDarkMode(isDark) {
-  const body = document.body;
-  if (isDark) {
-    body.classList.add("dark-mode");
-  } else {
-    body.classList.remove("dark-mode");
-  }
-}
-
-});
+}); // end DOMContentLoaded
